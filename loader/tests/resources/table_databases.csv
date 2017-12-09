@@ -1,6 +1,6 @@
 table,numrows,creator,relation,database
-transaction_margin,1200000,g.toonstra,ASSOCIATED,dwh
-sold_quantity,1200000,g.toonstra,ASSOCIATED,dwh
+transaction_margin,1200000,d.book,ASSOCIATED,dwh
+sold_quantity,1200000,d.book,ASSOCIATED,dwh
 customer_satisfaction,25042123,jane.doe,ASSOCIATED,crm
 warehouse_stock,31023213,john.doe,ASSOCIATED,wms
 market_share,805532,adam.fine,ASSOCIATED,ods

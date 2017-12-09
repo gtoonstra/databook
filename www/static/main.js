@@ -20,7 +20,7 @@
     .controller('SearchController', ['$scope', '$log', '$http',
       function($scope, $log, $http) {
 
-        $scope.formData = {"searchTerm": "Gerard", "nodeType": "person", "csrf_token": 'nil'};
+        $scope.formData = {"searchTerm": "Data Book", "nodeType": "person", "csrf_token": 'nil'};
 
         $scope.columns = [];
         $scope.tabledata = [];

@@ -11,7 +11,12 @@ through the processing of log files.
 
 Here's how to install it:
 
+https://github.com/gtoonstra/databook/blob/master/docs/Installation.md
 
+Project layout overview:
+
+https://github.com/gtoonstra/databook/blob/master/docs/Projectlayout.md
 
 A tutorial:
 
+https://github.com/gtoonstra/databook/blob/master/docs/Tutorial.md

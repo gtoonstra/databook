@@ -39,7 +39,7 @@ where you'll want:
 - GraphAware Neo4j2Elastic
 - GraphAware UUID (optional)
 
-Modify neo4j according to the instructions on the github plugin page:
+Modify the config of neo4j according to the instructions on the github plugin page:
 
 https://github.com/graphaware/neo4j-to-elasticsearch
 
@@ -59,11 +59,9 @@ Check:
 
 http://localhost:7474/browser/
 
-It's probably sync'd your neo4j graph database with elasticsearch already. 
-You can query elasticsearch through URL's:
+You can query elasticsearch through the following:
 
 http://localhost:9200/_cat/indices
 
 http://localhost:9200/neo4j-index-node/_search?q=Jimmy
-
 

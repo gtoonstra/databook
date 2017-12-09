@@ -62,7 +62,6 @@ class Person(BaseView):
     @login_required
     def me(self):
         svc = Neo4JService()
-        table = {'name': 'Untitled'}
 
         person_uuid = None
         personList = svc.query(
