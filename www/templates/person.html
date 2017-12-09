@@ -1,0 +1,87 @@
+{% extends "master.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block body %}
+{{ super() }}  
+
+    <div class="container" ng-controller="PersonController">
+      <div class="row">
+        <div class="col-sm-4">
+          <h4>{{person.name}} &nbsp;&nbsp;&nbsp; <i class="fa fa-share-square-o" aria-hidden="true"></i></h4>
+          <p>{{person.role}}</p>
+          <br/><br/>
+          <h4>Find me at</h4>
+          <table class="table borderless">
+            <tr><td><i class="fa fa-map-marker" aria-hidden="true"></i></td><td>{{person.location}}</td></tr>
+            <tr><td><i class="fa fa-envelope-o" aria-hidden="true"></i></td><td>{{person.email}}</td></tr>
+            <tr><td><i class="fa fa-slack" aria-hidden="true"></i></td><td>@{{person.slack}}</td></tr>
+            <tr><td><i class="fa fa-github" aria-hidden="true"></i></td><td>{{person.github}}</td></tr>
+          </table>
+        </div>
+        <div class="col-sm-8">
+          <uib-tabset active="activeForm">
+            <uib-tab index="0" heading="Frequently used">
+              <table class="table">
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Last updated</th>
+                </tr>
+                {% for row in consumed %}
+                <tr>
+                  <td><a href='{{row['link']}}'>{{ row['name'] }}</a></td>
+                  <td>{{ row['type'] }}</td>
+                  <td>Unknown</td>
+                </tr>
+                {% endfor %}
+              </table>
+            </uib-tab>
+            <uib-tab index="1" heading="Created">
+              <table class="table">
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Used by #</th>
+                </tr>
+                {% for row in created %}
+                <tr>
+                  <td><a href='{{row['link']}}'>{{ row['name'] }}</a></td>
+                  <td>{{ row['type'] }}</td>
+                  <td>{{ row['count'] }}</td>
+                </tr>
+                {% endfor %}
+              </table>
+            </uib-tab>
+            <uib-tab index="2" heading="Favorites">
+              <table class="table">
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                </tr>
+                {% for row in favorites %}
+                <tr>
+                  <td><a href='{{row['link']}}'>{{ row['name'] }}</a></td>
+                  <td>{{ row['type'] }}</td>
+                </tr>
+                {% endfor %}
+              </table>
+            </uib-tab>
+            <uib-tab index="3" heading="Groups">
+              <table class="table">
+                <tr>
+                  <th>Name</th>
+                </tr>
+                {% for row in groups %}
+                <tr>
+                  <td><a href='{{row['link']}}'>{{ row['name'] }}</a></td>
+                </tr>
+                {% endfor %}
+              </table>
+            </uib-tab>
+          </uib-tabset>
+        </div>
+      </div>
+    </div>
+
+{% endblock %}

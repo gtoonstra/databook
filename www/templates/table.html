@@ -1,0 +1,104 @@
+{% extends "master.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block body %}
+{{ super() }}  
+
+  <div class="container" ng-controller="TableController" ng-init="isFavorite={{table.liked}}; table_uuid='{{table.uuid}}'">
+    <div class="row">
+      <div class="col-sm-4">
+        <h4>{{table.name}} &nbsp;&nbsp;&nbsp; <a href='#' ng-click="favorite()">
+          <span ng-if="isFavorite"><i class="fa fa-heart" aria-hidden="true"></i></span>
+          <span ng-if="!isFavorite"><i class="fa fa-heart-o" aria-hidden="true"></i></span>
+        </a></h4>
+        <p>Recently consumed by {{consumptionCount}}</p>
+      </div>
+      <div class="col-sm-8">
+        <uib-tabset active="activeForm">
+          <uib-tab index="0" heading="Upstream tables">
+            <table class="table">
+              <tr>
+                <th>Name</th>
+                <th>Database</th>
+                <th># rows</th>
+              </tr>
+              {% for row in upstream %}
+              <tr>
+                <td><a href='{{row['link']}}'>{{ row['name'] }}</a></td>
+                <td>{{ row['database'] }}</td>
+                <td>{{ row['numrows'] }}</td>
+              </tr>
+              {% endfor %}
+            </table>
+          </uib-tab>
+          <uib-tab index="1" heading="Downstream tables">
+            <table class="table">
+              <tr>
+                <th>Name</th>
+                <th>Database</th>
+                <th># rows</th>
+              </tr>
+              {% for row in downstream %}
+              <tr>
+                <td><a href='{{row['link']}}'>{{ row['name'] }}</a></td>
+                <td>{{ row['database'] }}</td>
+                <td>{{ row['numrows'] }}</td>
+              </tr>
+              {% endfor %}
+            </table>
+          </uib-tab>
+          <uib-tab index="2" heading="Related charts">
+            <table class="table">
+              <tr>
+                <th>Name</th>
+              </tr>
+              {% for row in charts %}
+              <tr>
+                <td><a href='{{row['link']}}'>{{ row['name'] }}</a></td>
+              </tr>
+              {% endfor %}
+            </table>
+          </uib-tab>
+          <uib-tab index="3" heading="Creators">
+            <table class="table">
+              <tr>
+                <th>Name</th>
+              </tr>
+              {% for row in creators %}
+              <tr>
+                <td><a href='{{row['link']}}'>{{ row['name'] }}</a></td>
+              </tr>
+              {% endfor %}
+            </table>
+          </uib-tab>
+          <uib-tab index="4" heading="Consumers">
+            <table class="table">
+              <tr>
+                <th>Name</th>
+              </tr>
+              {% for row in consumers %}
+              <tr>
+                <td><a href='{{row['link']}}'>{{ row['name'] }}</a></td>
+              </tr>
+              {% endfor %}
+            </table>
+          </uib-tab>
+          <uib-tab index="5" heading="Related groups">
+            <table class="table">
+              <tr>
+                <th>Name</th>
+              </tr>
+              {% for row in consumerGroups %}
+              <tr>
+                <td>Name:</td><td><a href='{{row['link']}}'>{{ row['name'] }}</a></td>
+              </tr>
+              {% endfor %}
+            </table>
+          </uib-tab>
+        </uib-tabset>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

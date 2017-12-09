@@ -1,0 +1,10 @@
+login,relation,group
+g.toonstra,ASSOCIATED,actionable-insights
+g.toonstra,ASSOCIATED,data-platform
+jane.doe,ASSOCIATED,data-engineering
+jane.doe,ASSOCIATED,actionable-insights
+john.doe,ASSOCIATED,actionable-insights
+adam.fine,ASSOCIATED,actionable-insights
+jonathan.skill,ASSOCIATED,actionable-insights
+jonathan.skill,ASSOCIATED,marketing
+adam.fine,ASSOCIATED,data-engineering

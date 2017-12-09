@@ -1,0 +1,8 @@
+login,relation,chart
+g.toonstra,CONSUMED,transaction-margin-chart
+g.toonstra,CREATED,transaction-margin-chart
+g.toonstra,CREATED,sold-quantity-chart
+jane.doe,CREATED,nps-chart
+john.doe,CREATED,stock-overview
+adam.fine,CREATED,market-share-overview
+jonathan.skill,CONSUMED,market-share-overview

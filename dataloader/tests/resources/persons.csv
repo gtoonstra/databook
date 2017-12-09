@@ -1,0 +1,6 @@
+login,email,name,role,slack,github,location
+g.toonstra,g.toonstra@bogus.com,Gerard Toonstra,Team Lead Data Platform,g.toonstra,gtoonstra,"Rotterdam, NL"
+john.doe,john.doe@bogus.com,John Doe,BI developer,john.doe,johndoe,"Maastricht, NL"
+jane.doe,jane.doe@bogus.com,Jane Doe,Business analyst,jane.doe,janedoe,"Spijkenisse, NL"
+adam.fine,adam.fine@bogus.com,Adam Fine,Marketing guru,adamfine,adam.fine,"Rotterdam, NL"
+jonathan.skill,jonathan.skill@bogus.com,Jonathan Skill,Business Analyst,jonathan.skill,jonathanskill,"Rotterdam, NL"

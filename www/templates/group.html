@@ -1,0 +1,77 @@
+{% extends "master.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block body %}
+{{ super() }}  
+
+    <div class="container" ng-controller="GroupController" ng-init="isFavorite={{group.liked}}; setGroup('{{group.uuid}}', '{{group.name}}');">
+      <div class="row">
+        <div class="col-sm-4">
+          <span ng-if="isEditing">
+            <input type="text" ng-model="formData.groupTitle" class="form-control" placeholder="...">
+            <button class="btn btn-default" type="submit" ng-click="createGroup()"><i class="fa fa-users" aria-hidden="true"></i>&nbsp;Create</i>
+            </button>
+          </span>
+          <span ng-if="!isEditing">
+            <h4>{{group.name}} &nbsp;&nbsp;&nbsp; <a href='#' ng-click="favorite()">
+              <span ng-if="isFavorite"><i class="fa fa-heart" aria-hidden="true"></i></span>
+              <span ng-if="!isFavorite"><i class="fa fa-heart-o" aria-hidden="true"></i></span>
+            </a>
+            </h4>
+          </span>
+          <table class="table borderless">
+            <tr>
+              <th>Members</th>
+            </tr>
+            {% for row in members %}
+            <tr>
+              <td><a href='{{row['link']}}'>{{ row['name'] }}</a></td>
+            </tr>
+            {% endfor %}
+          </table>
+          <br/><br/>
+          <h4>Actions</h4>
+
+          <a href='#'><i class="fa fa-plus" aria-hidden="true"></i> &nbsp;Add external link</a><br/>
+          <a href='#'><i class="fa fa-pencil-square-o" aria-hidden="true"></i> &nbsp;Edit page</a><br/>
+
+          {% if isMember %}
+          <a href='#' ng-click="leaveGroup('{{group.uuid}}')"><i class="fa fa-sign-out" aria-hidden="true"></i> &nbsp;Leave group</a>
+          {% else %}
+          <a href='#' ng-click="joinGroup('{{group.uuid}}')"><i class="fa fa-sign-out" aria-hidden="true"></i> &nbsp;Join group</a>
+          {% endif %}
+
+        </div>
+        <div class="col-sm-8">
+          <uib-tabset active="activeForm">
+            <uib-tab index="0" heading="Charts produced">
+              <table class="table">
+                <tr>
+                  <th>Name</th>
+                </tr>
+                {% for row in charts %}
+                <tr>
+                  <td><a href='{{row['link']}}'>{{ row['name'] }}</a></td>
+                </tr>
+                {% endfor %}
+              </table>
+            </uib-tab>
+            <uib-tab index="1" heading="Tables created">
+              <table class="table">
+                <tr>
+                  <th>Name</th>
+                </tr>
+                {% for row in tables %}
+                <tr>
+                  <td><a href='{{row['link']}}'>{{ row['name'] }}</a></td>
+                </tr>
+                {% endfor %}
+              </table>
+            </uib-tab>
+          </uib-tabset>
+        </div>
+      </div>
+    </div>
+
+{% endblock %}
