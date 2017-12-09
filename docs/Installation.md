@@ -65,3 +65,32 @@ http://localhost:9200/_cat/indices
 
 http://localhost:9200/neo4j-index-node/_search?q=Jimmy
 
+
+### Install a virtual environment
+
+Execute setup_venv.sh:
+
+```
+# ./setup_venv.sh
+```
+
+Source the environment:
+
+```
+# source venv/bin/activate
+```
+
+Install the pip requirements:
+
+```
+# pip install -r requirements.txt
+```
+
+Start the www frontend:
+
+```
+# cd www
+# python3 app.py
+```
+
+Visit http://localhost:5000/  to see the index page
