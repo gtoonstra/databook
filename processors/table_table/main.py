@@ -98,7 +98,7 @@ def process_relationships(fout, root, dirpath, filename):
     insert_tables, select_tables = root.collect_tables()
 
     if len(insert_tables) == 0:
-        logger.error("Invalid statements? {0}".format(filename))
+        logger.error("Missing insert statements at: {0}".format(filename))
         return
 
     insert_table, insert_db = extract_table_and_db(insert_tables[0], dest_db)

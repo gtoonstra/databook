@@ -3,6 +3,7 @@ Flask>=0.12.2
 Flask-Admin>=1.5.0
 Flask-WTF>=0.14.2
 Flask-Login>=0.4.0
+future>=0.16.0
 neo4j-driver>=1.5.0
 sqlineage==0.2.2
 urlparse3>=1.1
