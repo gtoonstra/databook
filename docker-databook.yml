@@ -1,0 +1,63 @@
+version: '3'
+services:
+  postgres:
+      image: postgres:9.6
+      container_name: pg_airflow_databook
+      environment:
+          - POSTGRES_USER=airflow
+          - POSTGRES_PASSWORD=airflow
+          - POSTGRES_DB=airflow
+      ports:
+          - 5432:5432
+      networks:
+        - databooknet
+  webserver:
+      image: puckel/docker-airflow:1.8.0
+      container_name: airflow_databook
+      restart: always
+      depends_on:
+          - postgres
+      environment:
+          - LOAD_EX=n
+          - EXECUTOR=Local
+      volumes:
+          - ./dags:/usr/local/airflow/dags
+      ports:
+          - 8080:8080
+      command: webserver
+      networks:
+        - databooknet
+  neo4j:
+      image: neo4j:3.2.3
+      container_name: neo4j_databook
+      ulimits:
+        nofile:
+          soft: 40000
+          hard: 40000
+      ports:
+          - 7474:7474
+          - 7687:7687
+      volumes:
+          - ./data:/data
+      networks:
+        - databooknet
+  elasticsearch:
+      image: docker.elastic.co/elasticsearch/elasticsearch:5.6.6
+      container_name: elasticsearch_databook
+      environment:
+        - cluster.name=docker-cluster
+        - bootstrap.memory_lock=true
+        - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      ulimits:
+        memlock:
+          soft: -1
+          hard: -1
+      volumes:
+        - ./esdata:/usr/share/elasticsearch/data
+      ports:
+        - 9200:9200
+      networks:
+        - databooknet
+
+networks:
+  databooknet:
