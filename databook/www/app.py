@@ -2,7 +2,7 @@ from flask import Flask, render_template
 from flask_admin import Admin, base
 from flask_wtf.csrf import CSRFProtect
 import flask_login
-import views
+from databook.www import views
 import logging
 from errors import InvalidUsage
 
@@ -55,5 +55,16 @@ def create_app():
     app.run()
 
 
-if __name__ == '__main__':
-    create_app()
+app = None
+
+
+def cached_app(config=None, testing=False):
+    global app
+    if not app:
+        base_url = urlparse(configuration.get('webserver', 'base_url'))[2]
+        if not base_url or base_url == '/':
+            base_url = ""
+
+        app = create_app(config, testing)
+        app = DispatcherMiddleware(root_app, {base_url: app})
+    return app

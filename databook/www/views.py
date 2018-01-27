@@ -1,7 +1,7 @@
 from flask_admin import BaseView, expose, AdminIndexView
 from flask_login import login_required, login_user, logout_user, current_user
 from flask import url_for, redirect, request, flash
-from neo4j_services import Neo4JService
+from databook.www.neo4j_services import Neo4JService
 from utils import discover_type
 
 

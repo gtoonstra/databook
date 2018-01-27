@@ -63,6 +63,13 @@ services:
         - 9200:9200
       networks:
         - databooknet
+  databook:
+      image: gtoonstra/databook:0.1.0
+      container_name: databook
+      ports:
+        - 5000:5000
+      networks:
+        - databooknet
 
 networks:
   databooknet:
