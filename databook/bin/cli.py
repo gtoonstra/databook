@@ -29,6 +29,10 @@ from dateutil.parser import parse as parsedate
 from databook import configuration as conf
 from databook import settings
 from databook.www.app import cached_app
+from databook.utils.logging_mixin import LoggingMixin
+
+
+log = LoggingMixin().log
 
 
 Arg = namedtuple(
@@ -146,6 +150,22 @@ def restart_workers(gunicorn_master_proc, num_workers_expected):
                 psutil.Process(gunicorn_master_proc.pid).children()
             ) < num_workers_expected:
                 start_refresh(gunicorn_master_proc)
+
+
+def get_num_ready_workers_running(gunicorn_master_proc):
+    workers = psutil.Process(gunicorn_master_proc.pid).children()
+
+    def ready_prefix_on_cmdline(proc):
+        try:
+            cmdline = proc.cmdline()
+            if len(cmdline) > 0:
+                return settings.GUNICORN_WORKER_READY_PREFIX in cmdline[0]
+        except psutil.NoSuchProcess:
+            pass
+        return False
+
+    ready_workers = [proc for proc in workers if ready_prefix_on_cmdline(proc)]
+    return len(ready_workers)
 
 
 def webserver(args):
