@@ -9,4 +9,4 @@ TRY_LOOP="20"
 #     $(which pip) install --user -r /requirements.txt
 # fi
 
-exec $CMD databook
+exec $CMD webserver

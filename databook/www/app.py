@@ -1,14 +1,14 @@
 from flask import Flask, render_template
 from flask_admin import Admin, base
 from flask_wtf.csrf import CSRFProtect
+from six.moves.urllib.parse import urlparse
+from werkzeug.wsgi import DispatcherMiddleware
 import flask_login
 from databook.www import views
 import logging
-from errors import InvalidUsage
-
-
-FORMAT = '%(asctime)-15s - %(message)s'
-logging.basicConfig(level=logging.INFO, format=FORMAT)
+from databook.www.errors import InvalidUsage
+from databook.utils.logging_mixin import LoggingMixin
+from databook import configuration as conf
 
 
 csrf = CSRFProtect()
@@ -22,9 +22,9 @@ def create_app():
 
     with app.app_context():
         admin = Admin(
-            app, name='DataPortal',
+            app, name='DataBook',
             static_url_path='/',
-            index_view=views.DataPortal(endpoint='', url='/', name="DataPortal"),
+            index_view=views.DataPortal(endpoint='', url='/', name="DataBook"),
             template_mode='bootstrap3',
         )
         av = admin.add_view
@@ -42,7 +42,7 @@ def create_app():
     login_manager.login_view = "admin.login"
     login_manager.init_app(app)
 
-    import api
+    from databook.www import api
     csrf.exempt(api.api_blueprint)
     app.register_blueprint(api.api_blueprint)
 
@@ -52,19 +52,23 @@ def create_app():
         response.status_code = error.status_code
         return response
 
-    app.run()
+    return app
 
 
 app = None
+
+def root_app(env, resp):
+    resp(b'404 Not Found', [(b'Content-Type', b'text/plain')])
+    return [b'Apache Airflow is not at this location']
 
 
 def cached_app(config=None, testing=False):
     global app
     if not app:
-        base_url = urlparse(configuration.get('webserver', 'base_url'))[2]
+        base_url = urlparse(conf.get('webserver', 'base_url'))[2]
         if not base_url or base_url == '/':
             base_url = ""
 
-        app = create_app(config, testing)
+        app = create_app()
         app = DispatcherMiddleware(root_app, {base_url: app})
     return app

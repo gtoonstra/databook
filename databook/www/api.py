@@ -5,12 +5,13 @@ from flask_login import login_required, current_user
 from flask import request
 from flask import jsonify
 from flask import url_for
-from errors import InvalidUsage
-import search
-from neo4j_services import Neo4JService
+from databook.www.errors import InvalidUsage
+from databook.www import search
+from databook.www.neo4j_services import Neo4JService
+from databook.utils.logging_mixin import LoggingMixin
 
 
-logger = logging.getLogger(__name__)
+logger = LoggingMixin().log
 api_blueprint = Blueprint('apiv1', __name__)
 
 
