@@ -349,6 +349,8 @@ def parameterized_config(template):
     return template.format(**all_vars)
 
 
+TEMPLATE_START = (
+    '# ----------------------- TEMPLATE BEGINS HERE -----------------------')
 if not os.path.isfile(DATABOOK_CONFIG):
     log.info(
         'Creating new Databook config file in: %s',

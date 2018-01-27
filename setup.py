@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 # Kept manually in sync with airflow.__version__
 version = imp.load_source(
-    'databook.version', os.path.join('databook', 'www', 'version.py')).version
+    'databook.version', os.path.join('databook', 'version.py')).version
 
 devel = [
     'nose',

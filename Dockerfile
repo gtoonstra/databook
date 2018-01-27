@@ -57,11 +57,10 @@ RUN set -ex \
         /usr/share/doc-base
 
 COPY script/entrypoint.sh /entrypoint.sh
-COPY requirements.txt /requirements.txt
-COPY setup.py /setup.py
 
-RUN $(which pip) install --user -r /requirements.txt
-RUN python3 setup.py install
+ADD . /tmp/
+WORKDIR /tmp/
+RUN python3 /tmp/setup.py install
 
 # COPY config/databook.cfg ${DATABOOK_HOME}/databook.cfg
 
