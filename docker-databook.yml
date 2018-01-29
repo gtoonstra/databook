@@ -22,6 +22,7 @@ services:
           - EXECUTOR=Local
       volumes:
           - ./dags:/usr/local/airflow/dags
+          - ./docker/airflow/requirements.txt:/requirements.txt
       ports:
           - 8080:8080
       command: webserver
@@ -44,7 +45,7 @@ services:
           soft: -1
           hard: -1
       volumes:
-        - ./esdata:/usr/share/elasticsearch/data
+        - ./docker/elasticsearch/data:/usr/share/elasticsearch/data
       ports:
         - 9200:9200
       networks:
@@ -62,10 +63,10 @@ services:
           - 7474:7474
           - 7687:7687
       volumes:
-          - ./conf:/conf
-          - ./data:/data
-          - ./import:/import
-          - ./plugins:/plugins
+          - ./docker/neo4j/conf:/conf
+          - ./docker/neo4j/data:/data
+          - ./docker/neo4j/import:/import
+          - ./docker/neo4j/plugins:/plugins
       networks:
         - databooknet
   databook:

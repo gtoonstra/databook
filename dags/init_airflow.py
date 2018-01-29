@@ -47,22 +47,13 @@ def init_airflow_databook():
         session.commit()
 
     create_new_conn(session,
-                    {"conn_id": "postgres_oltp",
-                     "conn_type": "postgres",
-                     "host": "postgres",
-                     "port": 5432,
-                     "schema": "orders",
-                     "login": "oltp_read",
-                     "password": "oltp_read"})
-
-    create_new_conn(session,
-                    {"conn_id": "postgres_dwh",
-                     "conn_type": "postgres",
-                     "host": "postgres",
-                     "port": 5432,
-                     "schema": "dwh",
-                     "login": "dwh_svc_account",
-                     "password": "dwh_svc_account"})
+                    {"conn_id": "neo4j",
+                     "conn_type": "http",
+                     "host": "neo4j_databook",
+                     "port": 7687,
+                     "schema": "",
+                     "login": "neo4j",
+                     "password": "j4oen"})
 
     session.close()
 
