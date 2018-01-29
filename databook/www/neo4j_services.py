@@ -1,6 +1,8 @@
 from neo4j.v1 import GraphDatabase, basic_auth
+from neo4j.exceptions import ServiceUnavailable
 from databook.utils.logging_mixin import LoggingMixin
 from databook.exceptions import DatabookException
+from databook import configuration as conf
 
 
 log = LoggingMixin().log
@@ -20,21 +22,29 @@ class Neo4JService(object):
             raise DatabookException("Attempted to connect > 10 times")
 
         try:
-            driver = GraphDatabase.driver(neo4j_url, auth=basic_auth(neo4j_user, neo4j_pass))
-            self.session = driver.session()
+            self.driver = GraphDatabase.driver(neo4j_url, auth=basic_auth(neo4j_user, neo4j_pass))
+            session = self.driver.session()
             self.connected = True
             self.attempts = 0
-        except neo4j.exceptions.ServiceUnavailable as su:
+            return session
+        except ServiceUnavailable as su:
             log.error("Neo4j is not available")
             self.connected = False
             self.attempts += 1
+            raise
 
     def query(self, qry, params):
         if not self.connected:
-            self.connect()
+            self.session = self.connect()
 
-        data = []
-        response = self.session.run(qry, params)
-        for record in response:
-            data.append(record)
-        return data
+        try:
+            data = []
+            response = self.session.run(qry, params)
+            for record in response:
+                data.append(record)
+            return data
+        except ServiceUnavailable as su:
+            log.error("Neo4j connection error")
+            self.connected = False
+            self.attempts = 0
+            raise

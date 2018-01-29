@@ -1,5 +1,10 @@
 from elasticsearch import Elasticsearch
-es = Elasticsearch(['http://127.0.0.1'])
+from databook import configuration as conf
+
+
+base_url = conf.get('elasticsearch', 'base_url')
+
+es = Elasticsearch([base_url])
 
 
 def search_elastic(searchterm, doc_type=None, page_start=0, size=20):

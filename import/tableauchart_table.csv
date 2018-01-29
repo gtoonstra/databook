@@ -1,0 +1,6 @@
+chart,relation,table,database
+transaction-margin-chart,CONSUMED,transaction_margin,dwh
+sold-quantity-chart,CONSUMED,sold_quantity,dwh
+nps-chart,CONSUMED,customer-service,customer_satisfaction,crm
+stock-overview,CONSUMED,warehouse_stock,wms
+market-share-overview,CONSUMED,market_share,ods

@@ -50,7 +50,7 @@ services:
       networks:
         - databooknet
   neo4j:
-      image: neo4j:3.2.3
+      image: neo4j:3.3.0
       container_name: neo4j_databook
       depends_on:
         - elasticsearch
@@ -62,7 +62,10 @@ services:
           - 7474:7474
           - 7687:7687
       volumes:
+          - ./conf:/conf
           - ./data:/data
+          - ./import:/import
+          - ./plugins:/plugins
       networks:
         - databooknet
   databook:

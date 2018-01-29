@@ -1,0 +1,10 @@
+login,relation,group
+d.book,ASSOCIATED,actionable-insights
+d.book,ASSOCIATED,data-services
+jane.doe,ASSOCIATED,data-engineering
+jane.doe,ASSOCIATED,actionable-insights
+john.doe,ASSOCIATED,actionable-insights
+adam.fine,ASSOCIATED,actionable-insights
+jonathan.skill,ASSOCIATED,actionable-insights
+jonathan.skill,ASSOCIATED,marketing
+adam.fine,ASSOCIATED,data-engineering
