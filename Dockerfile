@@ -56,7 +56,7 @@ RUN set -ex \
         /usr/share/doc \
         /usr/share/doc-base
 
-COPY script/entrypoint.sh /entrypoint.sh
+COPY docker/databook/script/entrypoint.sh /entrypoint.sh
 
 ADD . /tmp/
 WORKDIR /tmp/
