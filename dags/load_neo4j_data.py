@@ -22,7 +22,7 @@ from airflow.settings import Session
 
 args = {
     'owner': 'airflow',
-    'start_date': airflow.utils.dates.days_ago(7),
+    'start_date': airflow.utils.dates.days_ago(1),
     'provide_context': True
 }
 
@@ -33,8 +33,62 @@ dag = airflow.DAG(
     default_args=args,
     max_active_runs=1)
 
-t1 = Neo4jOperator(task_id='load_persons',
-                   neo4j_conn_id='neo4j',
-                   cypher='test',
-                   provide_context=False,
-                   dag=dag)
+trunc_db = Neo4jOperator(
+    task_id='trunc_db',
+    neo4j_conn_id='neo4j',
+    cql='',
+    dag=dag)
+
+persons = Neo4jOperator(
+    task_id='persons',
+    neo4j_conn_id='neo4j',
+    cql='cql/persons.cql',
+    dag=dag)
+
+person_groups = Neo4jOperator(
+    task_id='person_groups',
+    neo4j_conn_id='neo4j',
+    cql='cql/person_groups.cql',
+    dag=dag)
+
+person_tbchart = Neo4jOperator(
+    task_id='person_tbchart',
+    neo4j_conn_id='neo4j',
+    cql='cql/person_tableauchart.cql',
+    dag=dag)
+
+person_tbwb = Neo4jOperator(
+    task_id='person_tbwb',
+    neo4j_conn_id='neo4j',
+    cql='cql/person_tableauwb.cql',
+    dag=dag)
+
+table_dbs = Neo4jOperator(
+    task_id='table_dbs',
+    neo4j_conn_id='neo4j',
+    cql='cql/table_databases.cql',
+    dag=dag)
+
+table_table = Neo4jOperator(
+    task_id='table_table',
+    neo4j_conn_id='neo4j',
+    cql='cql/table_table.cql',
+    dag=dag)
+
+tbchart_table = Neo4jOperator(
+    task_id='tbchart_table',
+    neo4j_conn_id='neo4j',
+    cql='cql/tableauchart_table.cql',
+    dag=dag)
+
+tbwb_chart = Neo4jOperator(
+    task_id='tbwb_chart',
+    neo4j_conn_id='neo4j',
+    cql='cql/tableauwb_chart.cql',
+    dag=dag)
+
+trunc_db >> persons
+persons >> person_groups >> person_tbwb >> person_tbchart
+person_tbchart >> table_dbs >> table_table
+table_table >> tbchart_table >> tbwb_chart
+

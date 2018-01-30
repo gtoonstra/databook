@@ -15,7 +15,6 @@
 from airflow.hooks.dbapi_hook import DbApiHook
 from neo4j.v1 import GraphDatabase, basic_auth
 from neo4j.exceptions import ServiceUnavailable
-import logging
 
 
 class Neo4jHook(DbApiHook):
@@ -39,13 +38,11 @@ class Neo4jHook(DbApiHook):
         try:
             self.driver = GraphDatabase.driver(
                 "bolt://{0}:{1}".format(conn.host, conn.port),
-                auth=basic_auth(
-                    conn.login, 
-                    conn.password))
+                auth=basic_auth(conn.login, conn.password))
             self.session = self.driver.session()
             return self.session
         except ServiceUnavailable as su:
-            log.error("Neo4j is not available")
+            logging.error("Neo4j is not available")
             raise
 
     def run(self, qry, parameters=None):
@@ -59,5 +56,5 @@ class Neo4jHook(DbApiHook):
                 data.append(record)
             return data
         except ServiceUnavailable as su:
-            log.error("Neo4j connection error")
+            logging.error("Neo4j connection error")
             raise

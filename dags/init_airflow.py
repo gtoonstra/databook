@@ -34,8 +34,12 @@ def init_airflow_databook():
     session = Session()
 
     def create_new_conn(session, attributes):
-        new_conn = models.Connection()
-        new_conn.conn_id = attributes.get("conn_id")
+        conn_id = attributes.get("conn_id")
+        new_conn = session.query(models.Connection).filter(models.Connection.conn_id==conn_id).first()
+        if not new_conn:
+            logging.info("No connection found")
+            new_conn = models.Connection()
+        new_conn.conn_id = conn_id
         new_conn.conn_type = attributes.get('conn_type')
         new_conn.host = attributes.get('host')
         new_conn.port = attributes.get('port')
@@ -43,12 +47,12 @@ def init_airflow_databook():
         new_conn.login = attributes.get('login')
         new_conn.set_password(attributes.get('password'))
 
-        session.add(new_conn)
+        session.merge(new_conn)
         session.commit()
 
     create_new_conn(session,
                     {"conn_id": "neo4j",
-                     "conn_type": "http",
+                     "conn_type": "bolt",
                      "host": "neo4j_databook",
                      "port": 7687,
                      "schema": "",

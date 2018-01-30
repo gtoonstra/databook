@@ -53,6 +53,8 @@ services:
   neo4j:
       image: neo4j:3.3.0
       container_name: neo4j_databook
+      environment:
+        - NEO4J_AUTH=neo4j/j4oen
       depends_on:
         - elasticsearch
       ulimits:

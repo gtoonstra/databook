@@ -30,23 +30,24 @@ class Neo4jOperator(BaseOperator):
         Template reference are recognized by str ending in '.sql'
     """
 
-    template_fields = ('cypher',)
+    template_fields = ('cql',)
+    template_ext = ('.cql',)
     ui_color = '#ededed'
 
     @apply_defaults
     def __init__(
-            self, 
-            cypher, 
-            neo4j_conn_id='neo4j_default', 
+            self,
+            cql,
+            neo4j_conn_id='neo4j_default',
             parameters=None, *args, **kwargs):
         super(Neo4jOperator, self).__init__(*args, **kwargs)
         self.neo4j_conn_id = neo4j_conn_id
-        self.cypher = cypher
+        self.cql = cql
         self.parameters = parameters
 
     def execute(self, context):
-        logging.info('Executing: %s', self.cypher)
+        logging.info('Executing: %s', self.cql)
         hook = Neo4jHook(neo4j_conn_id=self.neo4j_conn_id)
         hook.run(
-            self.cypher,
+            self.cql,
             parameters=self.parameters)
