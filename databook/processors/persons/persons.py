@@ -48,6 +48,15 @@ def query_users(org):
     conn.search(**searchParameters)
 
     for entry in conn.entries:
+        l = entry['memberOf'].value
+        if l:
+            for member in l:
+                if not ',cn=groups,' in member:
+                    print("Removing {0}".format(member))
+                    l.remove(member)
+        else:
+            l = []
+
         person = Person(dn=entry.entry_dn, 
                         cn=entry['cn'], 
                         role=entry['sn'],

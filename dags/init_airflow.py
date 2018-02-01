@@ -59,6 +59,15 @@ def init_airflow_databook():
                      "login": "neo4j",
                      "password": "j4oen"})
 
+    create_new_conn(session,
+                    {"conn_id": "freeipa_ldap",
+                     "conn_type": "ldap",
+                     "host": "ipa.demo1.freeipa.org",
+                     "port": 389,
+                     "schema": "",
+                     "login": "uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org",
+                     "password": "Secret123"})
+
     session.close()
 
 dag = airflow.DAG(

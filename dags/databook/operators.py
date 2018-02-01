@@ -13,20 +13,22 @@
 # limitations under the License.
 
 from databook.neo4j_hook import Neo4jHook
+from databook.ldap_hook import LdapHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 import logging
+import json
 
 
 class Neo4jOperator(BaseOperator):
     """
     Executes Cypher code against a Neo4j database
 
-    :param oracle_conn_id: reference to a specific Oracle database
-    :type oracle_conn_id: string
-    :param sql: the sql code to be executed
-    :type sql: Can receive a str representing a sql statement,
-        a list of str (sql statements), or reference to a template file.
+    :param neo4j_conn_id: reference to a specific Neo4j database
+    :type neo4j_conn_id: string
+    :param cql: the cypher ql code to be executed
+    :type cql: Can receive a str representing a cql statement,
+        a list of str (cql statements), or reference to a template file.
         Template reference are recognized by str ending in '.sql'
     """
 
@@ -51,3 +53,48 @@ class Neo4jOperator(BaseOperator):
         hook.run(
             self.cql,
             parameters=self.parameters)
+
+
+class LdapOperator(BaseOperator):
+    """
+    Executes a search against an LDAP store and stores the results in a file.
+
+    :param base: Base LDAP hierarchy to check
+    :type base: string
+    :param search_filter: LDAP objects to filter on
+    :type search_filter: string
+    :param attributes: List of string attributes to extract in the query
+    :type attributes: list
+    """
+
+    ui_color = '#ededed'
+
+    @apply_defaults
+    def __init__(
+            self,
+            base,
+            search_filter, 
+            attributes,
+            file_path,
+            member_of_string=None,
+            ldap_conn_id='ldap_default',
+            parameters=None,
+            *args, **kwargs):
+        super(LdapOperator, self).__init__(*args, **kwargs)
+        self.ldap_conn_id = ldap_conn_id
+        self.base = base
+        self.search_filter = search_filter
+        self.attributes = attributes
+        self.file_path = file_path
+        self.member_of_string = member_of_string
+
+    def execute(self, context):
+        logging.info('Executing search on {0}'.format(self.ldap_conn_id))
+        hook = LdapHook(ldap_conn_id=self.ldap_conn_id)
+        result = hook.run(
+            self.base, 
+            self.search_filter, 
+            self.attributes,
+            self.member_of_string)
+        with open(self.file_path, 'w') as outfile:
+            json.dump(result, outfile)

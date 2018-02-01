@@ -36,7 +36,7 @@ dag = airflow.DAG(
 trunc_db = Neo4jOperator(
     task_id='trunc_db',
     neo4j_conn_id='neo4j',
-    cql='',
+    cql='MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r',
     dag=dag)
 
 persons = Neo4jOperator(

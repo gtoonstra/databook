@@ -10,10 +10,12 @@ flask-admin==1.5.0
 flask-login==0.4.0
 flask-wtf==0.14.2
 flask==0.12.2
+future==0.16.0
 itsdangerous==0.24        # via flask
 jinja2==2.9.6             # via flask
 markupsafe==1.0           # via jinja2
 neo4j-driver==1.5.0
+pyasn1==0.4.2             # via ldap3
 sqlineage==0.2.2
 urllib3==1.22             # via elasticsearch
 urlparse3==1.1

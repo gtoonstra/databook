@@ -27,6 +27,7 @@ class Neo4jHook(DbApiHook):
 
     def __init__(self, *args, **kwargs):
         super(Neo4jHook, self).__init__(*args, **kwargs)
+        
         self.driver = None
 
     def get_conn(self):
