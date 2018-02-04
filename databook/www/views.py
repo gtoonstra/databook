@@ -135,11 +135,10 @@ class Login(BaseView):
     @expose('/login', methods=['GET', 'POST'])
     def login(self):
         if request.method == 'POST':
-            print("POST")
             username = request.form['username']
             password = request.form['password']        
 
-            DefaultUser.try_login(username, password)
+            # DefaultUser.try_login(username, password)
 
             login_user(DefaultUser(username))
             next_url = request.args.get('next')
