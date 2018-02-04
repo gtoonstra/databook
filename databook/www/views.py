@@ -3,6 +3,33 @@ from flask_login import login_required, login_user, logout_user, current_user
 from flask import url_for, redirect, request, flash
 from databook.www.neo4j_services import Neo4JService
 from databook.www.utils import discover_type
+from databook import configuration as conf
+from ldap3 import Server, Connection, ALL, LEVEL, SUBTREE, BASE
+from future.utils import native
+from databook.utils.logging_mixin import LoggingMixin
+
+
+log = LoggingMixin().log
+
+
+def get_ldap_connection(dn=None, password=None):
+    tls_configuration = None
+    use_ssl = False
+    try:
+        cacert = conf.get("ldap", "cacert")
+        tls_configuration = Tls(validate=ssl.CERT_REQUIRED, ca_certs_file=cacert)
+        use_ssl = True
+    except:
+        pass
+
+    server = Server(conf.get("ldap", "uri"), use_ssl, tls_configuration)
+    conn = Connection(server, native(dn), native(password))
+
+    if not conn.bind():
+        log.error("Cannot bind to ldap server: %s ", conn.last_error)
+        raise Exception("Cannot bind to ldap server")
+
+    return conn
 
 
 class DefaultUser(object):
@@ -24,6 +51,60 @@ class DefaultUser(object):
     def get_id(self):
         return self.userid
 
+    @staticmethod
+    def try_login(username, password):
+        conn = get_ldap_connection(conf.get("ldap", "bind_user"),
+                                   conf.get("ldap", "bind_password"))
+
+        search_filter = "(&({0})({1}={2}))".format(
+            conf.get("ldap", "user_filter"),
+            conf.get("ldap", "user_name_attr"),
+            username
+        )
+
+        search_scopes = {
+            "LEVEL": LEVEL,
+            "SUBTREE": SUBTREE,
+            "BASE": BASE
+        }
+
+        search_scope = LEVEL
+        if conf.has_option("ldap", "search_scope"):
+            search_scope = SUBTREE if conf.get("ldap", "search_scope") == "SUBTREE" else LEVEL
+
+        # todo: BASE or ONELEVEL?
+
+        res = conn.search(native(conf.get("ldap", "basedn")),
+                          native(search_filter),
+                          search_scope=native(search_scope))
+
+        # todo: use list or result?
+        if not res:
+            log.info("Cannot find user %s", username)
+            raise Exception("Invalid username or password")
+
+        entry = conn.response[0]
+
+        conn.unbind()
+
+        if 'dn' not in entry:
+            # The search filter for the user did not return any values, so an
+            # invalid user was used for credentials.
+            raise Exception("Invalid username or password")
+
+        try:
+            conn = get_ldap_connection(entry['dn'], password)
+        except KeyError as e:
+            log.error("""
+            Unable to parse LDAP structure. If you're using Active Directory and not specifying an OU, you must set search_scope=SUBTREE in airflow.cfg.
+            %s
+            """ % traceback.format_exc())
+            raise Exception("Could not parse LDAP structure. Try setting search_scope in airflow.cfg, or check logs")
+
+        if not conn:
+            log.info("Password incorrect for user %s", username)
+            raise Exception("Invalid username or password")
+
 
 class DataPortal(AdminIndexView):
 
@@ -35,17 +116,35 @@ class DataPortal(AdminIndexView):
     def index(self):
         return self.render('search.html')
 
-    @expose('/login', methods=['GET', 'POST'])
-    def login(self):
-        login_user(DefaultUser('manager'))
-        next_url = request.args.get('next')
-        return redirect(next_url or url_for("index"))
-
     @expose('/logout')
     def logout(self):
         logout_user()
         flash('You have been logged out.')
         return redirect(url_for('admin.index'))
+
+
+class Login(BaseView):
+
+    def is_visible(self):
+        return True
+
+    @expose('/')
+    def index(self):
+        return self.render('error.html')
+
+    @expose('/login', methods=['GET', 'POST'])
+    def login(self):
+        if request.method == 'POST':
+            print("POST")
+            username = request.form['username']
+            password = request.form['password']        
+
+            DefaultUser.try_login(username, password)
+
+            login_user(DefaultUser(username))
+            next_url = request.args.get('next')
+            return redirect(next_url or url_for("admin.index"))
+        return self.render('login.html')
 
 
 class Person(BaseView):

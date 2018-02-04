@@ -28,10 +28,11 @@ def create_app():
             template_mode='bootstrap3',
         )
         av = admin.add_view
+        av(views.Login(name='Login', category='Admin'))
         av(views.Person(name='Persons', category='Entities'))
+        av(views.Group(name='Groups', category='Entities'))
         #av(views.Table(name='Tables', category='Entities'))
         #av(views.Chart(name='Charts', category='Entities'))
-        av(views.Group(name='Groups', category='Entities'))
 
     login_manager = flask_login.LoginManager()
 
@@ -39,7 +40,7 @@ def create_app():
     def load_user(user_id):
         return views.DefaultUser(user_id)
 
-    login_manager.login_view = "admin.login"
+    login_manager.login_view = "login.login"
     login_manager.init_app(app)
 
     from databook.www import api
