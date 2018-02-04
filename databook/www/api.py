@@ -27,24 +27,25 @@ def get_person_data(res):
     return data
 
 
-def get_tableau_data(res):
-    data = []
-    for hit in res['hits']['hits']:
-        d = {}
-        d['_id'] = hit['_id']
-        d['link'] = url_for('chart.showChart', chart_id=d['_id'])
-        for k, v in hit['_source'].items():
-            d[k] = v
-        data.append(d)    
-    return data
-
-
 def get_group_data(res):
     data = []
     for hit in res['hits']['hits']:
         d = {}
         d['_id'] = hit['_id']
         d['link'] = url_for('group.showGroup', group_id=d['_id'])
+        for k, v in hit['_source'].items():
+            d[k] = v
+        data.append(d)    
+    return data
+
+
+"""Disable
+def get_tableau_data(res):
+    data = []
+    for hit in res['hits']['hits']:
+        d = {}
+        d['_id'] = hit['_id']
+        d['link'] = url_for('chart.showChart', chart_id=d['_id'])
         for k, v in hit['_source'].items():
             d[k] = v
         data.append(d)    
@@ -61,7 +62,7 @@ def get_table_data(res):
             d[k] = v
         data.append(d)    
     return data
-
+"""
 
 @api_blueprint.route('/search', methods=['POST'])
 @login_required
@@ -78,10 +79,10 @@ def searchTerm():
         res = search.search_elastic(searchterm, doc_type="Person")
     if nodetype == "group":
         res = search.search_elastic(searchterm, doc_type="Group")
-    if nodetype == "tableau":
-        res = search.search_elastic(searchterm, doc_type="Tableau")
-    if nodetype == "table":
-        res = search.search_elastic(searchterm, doc_type="Table")
+    #if nodetype == "tableau":
+    #    res = search.search_elastic(searchterm, doc_type="Tableau")
+    #if nodetype == "table":
+    #    res = search.search_elastic(searchterm, doc_type="Table")
 
     data = None
     if len(res) > 0:
@@ -89,15 +90,17 @@ def searchTerm():
             data = get_person_data(res)
         if nodetype == "group":
             data = get_group_data(res)
-        if nodetype == "tableau":
-            data = get_tableau_data(res)
-        if nodetype == "table":
-            data = get_table_data(res)
+    #    if nodetype == "tableau":
+    #        data = get_tableau_data(res)
+    #    if nodetype == "table":
+    #        data = get_table_data(res)
 
     logger.info("Found {0} results".format(len(data)))
 
     return jsonify(data)
 
+
+""" DISABLE
 
 @api_blueprint.route('/favorite_table', methods=['POST'])
 @login_required
@@ -136,6 +139,7 @@ def favoriteChart():
 
     return jsonify({})
 
+"""
 
 @api_blueprint.route('/favorite_group', methods=['POST'])
 @login_required

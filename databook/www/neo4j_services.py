@@ -22,6 +22,7 @@ class Neo4JService(object):
             raise DatabookException("Attempted to connect > 10 times")
 
         try:
+            log.info("Connecting {0} {1} {2}".format(neo4j_url, neo4j_user, neo4j_pass))
             self.driver = GraphDatabase.driver(neo4j_url, auth=basic_auth(neo4j_user, neo4j_pass))
             session = self.driver.session()
             self.connected = True

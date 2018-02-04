@@ -37,7 +37,7 @@ class DataPortal(AdminIndexView):
 
     @expose('/login', methods=['GET', 'POST'])
     def login(self):
-        login_user(DefaultUser('g.toonstra'))
+        login_user(DefaultUser('manager'))
         next_url = request.args.get('next')
         return redirect(next_url or url_for("index"))
 
@@ -84,6 +84,33 @@ class Person(BaseView):
             person = personList[0]['a'].properties
             person['link'] = url_for('person.showPerson', person_id=person['uuid'])
 
+        groups = []
+        groupList = svc.query("MATCH (p:Entity:Org:Person {uuid: {uuid}})-[s:ASSOCIATED]->(g:Entity:Org:Group) "
+            "RETURN g", {"uuid": person_id})
+        for record in groupList:
+            d = record['g'].properties
+            d['link'] = url_for('group.showGroup', group_id=d['uuid'])
+            groups.append(d)
+
+        favorites = []
+        favoritesList = svc.query("MATCH (p:Entity:Org:Person {uuid: {uuid}})-[s:LIKES]->(c) "
+            "RETURN c, labels(c) as l", {"uuid": person_id})
+        for record in favoritesList:
+            d = record['c'].properties
+            d['type'] = discover_type(record['l'])
+            if d['type'] == 'Database:Table':
+                d['link'] = url_for('table.showTable', table_id=d['uuid'])
+            elif d['type'] == 'Tableau:Chart':
+                d['link'] = url_for('chart.showChart', chart_id=d['uuid'])
+            elif d['type'] == 'Org:Group':
+                d['link'] = url_for('group.showGroup', group_id=d['uuid'])
+            favorites.append(d)
+        
+        return self.render('person.html',
+            person=person, 
+            groups=groups,
+            favorites=favorites)
+""" DISABLE
         created = []
         createList = svc.query("MATCH (p:Entity:Org:Person {uuid: {uuid}})-[s:CREATED]->(c)<-[r:CONSUMED]-() "
             "RETURN c, labels(c) as l, COUNT(r) as count "
@@ -99,14 +126,6 @@ class Person(BaseView):
                 d['link'] = url_for('chart.showChart', chart_id=d['uuid'])
             created.append(d)
 
-        groups = []
-        groupList = svc.query("MATCH (p:Entity:Org:Person {uuid: {uuid}})-[s:ASSOCIATED]->(g:Entity:Org:Group) "
-            "RETURN g", {"uuid": person_id})
-        for record in groupList:
-            d = record['g'].properties
-            d['link'] = url_for('group.showGroup', group_id=d['uuid'])
-            groups.append(d)
-
         consumed = []
         consumptionList = svc.query("MATCH (p:Entity:Org:Person {uuid: {uuid}})-[s:CONSUMED]->(c) "
             "RETURN c, labels(c) as l", {"uuid": person_id})
@@ -118,29 +137,94 @@ class Person(BaseView):
             elif d['type'] == 'Tableau:Chart':
                 d['link'] = url_for('chart.showChart', chart_id=d['uuid'])
             consumed.append(d)
+"""
 
-        favorites = []
-        favoritesList = svc.query("MATCH (p:Entity:Org:Person {uuid: {uuid}})-[s:LIKES]->(c) "
-            "RETURN c, labels(c) as l", {"uuid": person_id})
-        for record in favoritesList:
+
+
+class Group(BaseView):
+
+    def is_visible(self):
+        return False
+
+    @expose('/')
+    @login_required
+    def index(self):
+        return self.render('error.html')
+
+    @expose('/<string:group_id>')
+    @login_required
+    def showGroup(self, group_id):
+        svc = Neo4JService()
+        group = {'name': 'Untitled'}
+
+        person_uuid = None
+        personList = svc.query(
+            "MATCH (a:Entity:Org:Person) WHERE a.id = {login} "
+            "RETURN a.uuid as uuid", {"login": current_user.get_id()})
+        if len(personList) > 0:
+            person_uuid = personList[0]['uuid']
+
+        groupList = svc.query(
+            "MATCH (a:Entity:Org:Group) WHERE a.uuid = {uuid} "
+            "RETURN a", {"uuid": group_id})
+        if len(groupList) > 0:
+            group = groupList[0]['a'].properties
+        else:
+            group['uuid'] = '-1'
+
+        groupList = svc.query(
+            "MATCH (a:Entity:Org:Group {uuid: {uuid}})<-[s:LIKES]-(p:Entity:Org:Person {uuid: {person_uuid}}) "
+            "RETURN COUNT(s) as count", {"uuid": group_id, "person_uuid": person_uuid})
+        if len(groupList) > 0:
+            if groupList[0]['count'] > 0:
+                group['liked'] = 1
+            else:
+                group['liked'] = 0
+
+        members = []
+        memberList = svc.query("MATCH (a:Entity:Org:Group {uuid: {uuid}})<-[s:ASSOCIATED]-(p:Entity:Org:Person) "
+            "RETURN p", {"uuid": group_id})
+        for record in memberList:
+            d = record['p'].properties
+            d['link'] = url_for('person.showPerson', person_id=d['uuid'])
+            members.append(d)
+
+        isMember = False
+        for member in members:
+            if member['id'] == current_user.get_id():
+                isMember = True
+
+        return self.render('group.html', 
+            group=group,
+            members=members,
+            isMember=isMember)
+
+""" DISABLE 
+        charts = []
+        chartList = svc.query("MATCH (a:Entity:Org:Group {uuid: {uuid}})<-[s:ASSOCIATED]-(p:Entity:Org:Person)"
+            "-[b:CREATED]->(c:Entity:Tableau:Chart)<-[r:CONSUMED]-() "
+            "RETURN c, COUNT(r) as count "
+            "ORDER BY COUNT(r) DESC "
+            "LIMIT 10", {"uuid": group_id})
+        for record in chartList:
             d = record['c'].properties
-            d['type'] = discover_type(record['l'])
-            if d['type'] == 'Database:Table':
-                d['link'] = url_for('table.showTable', table_id=d['uuid'])
-            elif d['type'] == 'Tableau:Chart':
-                d['link'] = url_for('chart.showChart', chart_id=d['uuid'])
-            elif d['type'] == 'Org:Group':
-                d['link'] = url_for('group.showGroup', group_id=d['uuid'])
-            favorites.append(d)
+            d['link'] = url_for('chart.showChart', chart_id=d['uuid'])
+            charts.append(d)
 
-        return self.render('person.html', 
-            person=person, 
-            created=created, 
-            groups=groups,
-            consumed=consumed,
-            favorites=favorites)
+        tables = []
+        tableList = svc.query("MATCH (a:Entity:Org:Group {uuid: {uuid}})<-[s:ASSOCIATED]-(p:Entity:Org:Person)"
+            "-[b:CREATED]->(t:Entity:Database:Table)<-[r:CONSUMED]-() "
+            "RETURN t, COUNT(r) as count "
+            "ORDER BY COUNT(r) DESC "
+            "LIMIT 10", {"uuid": group_id})
+        for record in tableList:
+            d = record['t'].properties
+            d['link'] = url_for('table.showTable', table_id=d['uuid'])
+            tables.append(d)
 
+"""
 
+""" DISABLE 
 class Table(BaseView):
 
     def is_visible(self):
@@ -328,86 +412,5 @@ class Chart(BaseView):
             consumers=consumers,
             tables=tables,
             workbook=workbook)
+"""
 
-
-class Group(BaseView):
-
-    def is_visible(self):
-        return False
-
-    @expose('/')
-    @login_required
-    def index(self):
-        return self.render('error.html')
-
-    @expose('/<string:group_id>')
-    @login_required
-    def showGroup(self, group_id):
-        svc = Neo4JService()
-        group = {'name': 'Untitled'}
-
-        person_uuid = None
-        personList = svc.query(
-            "MATCH (a:Entity:Org:Person) WHERE a.id = {login} "
-            "RETURN a.uuid as uuid", {"login": current_user.get_id()})
-        if len(personList) > 0:
-            person_uuid = personList[0]['uuid']
-
-        groupList = svc.query(
-            "MATCH (a:Entity:Org:Group) WHERE a.uuid = {uuid} "
-            "RETURN a", {"uuid": group_id})
-        if len(groupList) > 0:
-            group = groupList[0]['a'].properties
-        else:
-            group['uuid'] = '-1'
-
-        groupList = svc.query(
-            "MATCH (a:Entity:Org:Group {uuid: {uuid}})<-[s:LIKES]-(p:Entity:Org:Person {uuid: {person_uuid}}) "
-            "RETURN COUNT(s) as count", {"uuid": group_id, "person_uuid": person_uuid})
-        if len(groupList) > 0:
-            if groupList[0]['count'] > 0:
-                group['liked'] = 1
-            else:
-                group['liked'] = 0
-
-        members = []
-        memberList = svc.query("MATCH (a:Entity:Org:Group {uuid: {uuid}})<-[s:ASSOCIATED]-(p:Entity:Org:Person) "
-            "RETURN p", {"uuid": group_id})
-        for record in memberList:
-            d = record['p'].properties
-            d['link'] = url_for('person.showPerson', person_id=d['uuid'])
-            members.append(d)
-
-        charts = []
-        chartList = svc.query("MATCH (a:Entity:Org:Group {uuid: {uuid}})<-[s:ASSOCIATED]-(p:Entity:Org:Person)"
-            "-[b:CREATED]->(c:Entity:Tableau:Chart)<-[r:CONSUMED]-() "
-            "RETURN c, COUNT(r) as count "
-            "ORDER BY COUNT(r) DESC "
-            "LIMIT 10", {"uuid": group_id})
-        for record in chartList:
-            d = record['c'].properties
-            d['link'] = url_for('chart.showChart', chart_id=d['uuid'])
-            charts.append(d)
-
-        tables = []
-        tableList = svc.query("MATCH (a:Entity:Org:Group {uuid: {uuid}})<-[s:ASSOCIATED]-(p:Entity:Org:Person)"
-            "-[b:CREATED]->(t:Entity:Database:Table)<-[r:CONSUMED]-() "
-            "RETURN t, COUNT(r) as count "
-            "ORDER BY COUNT(r) DESC "
-            "LIMIT 10", {"uuid": group_id})
-        for record in tableList:
-            d = record['t'].properties
-            d['link'] = url_for('table.showTable', table_id=d['uuid'])
-            tables.append(d)
-
-        isMember = False
-        for member in members:
-            if member['id'] == current_user.get_id():
-                isMember = True
-
-        return self.render('group.html', 
-            group=group,
-            members=members,
-            charts=charts,
-            tables=tables,
-            isMember=isMember)

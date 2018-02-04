@@ -29,8 +29,8 @@ def create_app():
         )
         av = admin.add_view
         av(views.Person(name='Persons', category='Entities'))
-        av(views.Table(name='Tables', category='Entities'))
-        av(views.Chart(name='Charts', category='Entities'))
+        #av(views.Table(name='Tables', category='Entities'))
+        #av(views.Chart(name='Charts', category='Entities'))
         av(views.Group(name='Groups', category='Entities'))
 
     login_manager = flask_login.LoginManager()
@@ -72,3 +72,8 @@ def cached_app(config=None, testing=False):
         app = create_app()
         app = DispatcherMiddleware(root_app, {base_url: app})
     return app
+
+
+if __name__ == "__main__":
+    app = cached_app()
+    app.run()
