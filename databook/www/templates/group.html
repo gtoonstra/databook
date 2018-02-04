@@ -5,9 +5,9 @@
 {% block body %}
 {{ super() }}  
 
-    <div class="container" ng-controller="GroupController" ng-init="isFavorite={{group.liked}}; setGroup('{{group.uuid}}', '{{group.name}}');">
+    <div class="full-container" ng-controller="GroupController" ng-init="isFavorite={{group.liked}}; setGroup('{{group.uuid}}', '{{group.name}}');">
       <div class="row">
-        <div class="col-sm-4">
+        <div class="col-sm-2">
           <span ng-if="isEditing">
             <input type="text" ng-model="formData.groupTitle" class="form-control" placeholder="...">
             <button class="btn btn-default" type="submit" ng-click="createGroup()"><i class="fa fa-users" aria-hidden="true"></i>&nbsp;Create</i>

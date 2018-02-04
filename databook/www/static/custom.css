@@ -23,6 +23,12 @@ body { padding-top: 20px; }
     overflow-y: hidden;
 }
 
+.container-full {
+  margin-left: 20px;
+  padding-right: 5px;
+  width: 100%;
+}
+
 /*
 .add-on .input-group-btn > .btn {
   border-left-width:0;left:-2px;
