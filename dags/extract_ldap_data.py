@@ -20,6 +20,7 @@ from airflow import models
 from airflow.settings import Session
 from databook.operators import LdapOperator
 from airflow.operators.python_operator import PythonOperator
+from databook.operators import FileCopyOperator
 
 
 args = {
@@ -153,7 +154,20 @@ write_csvs = PythonOperator(
     python_callable=write_csvs,
     dag=dag)
 
+copy_persons = FileCopyOperator(
+    task_id='copy_persons',
+    source_path=PERSON_FILE_CSV,
+    target_path='/import/persons.csv',
+    dag=dag)
+
+copy_person_groups = FileCopyOperator(
+    task_id='copy_person_groups',
+    source_path=PERSON_GROUPS_FILE_CSV,
+    target_path='/import/person_groups.csv',
+    dag=dag)
 
 ldap_persons >> flatten_groups
 ldap_groups >> flatten_groups
 flatten_groups >> write_csvs
+write_csvs >> copy_persons
+write_csvs >> copy_person_groups

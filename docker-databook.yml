@@ -23,6 +23,7 @@ services:
       volumes:
           - ./dags:/usr/local/airflow/dags
           - ./docker/airflow/requirements.txt:/requirements.txt
+          - ./docker/neo4j/import:/import
       ports:
           - 8080:8080
       command: webserver

@@ -18,6 +18,7 @@ from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 import logging
 import json
+from shutil import copyfile
 
 
 class Neo4jOperator(BaseOperator):
@@ -98,3 +99,29 @@ class LdapOperator(BaseOperator):
             self.member_of_string)
         with open(self.file_path, 'w') as outfile:
             json.dump(result, outfile)
+
+
+class FileCopyOperator(BaseOperator):
+    """
+    Copies a file on the mapped file system
+
+    :param source_path: Source where file is located
+    :type source_path: string
+    :param target_path: Destination for the file
+    :type target_path: string
+    """
+
+    ui_color = '#ededed'
+
+    @apply_defaults
+    def __init__(
+            self,
+            source_path,
+            target_path,
+            *args, **kwargs):
+        super(FileCopyOperator, self).__init__(*args, **kwargs)
+        self.source_path = source_path
+        self.target_path = target_path
+
+    def execute(self, context):
+        copyfile(self.source_path, self.target_path)
