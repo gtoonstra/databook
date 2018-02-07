@@ -199,7 +199,7 @@ extract_github = GithubUserListOperator(
     task_id='extract_github_users',
     github_conn_id='github_conn',
     output_file=GITHUB_FILE_JSON,
-    organization_id='coolblue-development',
+    organization_id='<your-org>',
     dag=dag)
 
 
