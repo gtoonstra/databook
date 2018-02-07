@@ -246,7 +246,8 @@ class GithubUserListOperator(BaseOperator):
                     "name": remove_commas(member.name),
                     "login": remove_commas(member.login),
                     "email": remove_commas(member.email),
-                    "url": remove_commas(member.url)
+                    "url": remove_commas(member.url),
+                    "location": remove_commas(member.location)
                 }
                 outfile.write(json.dumps(user))
                 outfile.write('\n')

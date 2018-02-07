@@ -112,14 +112,19 @@ def write_csvs(ds, **kwargs):
 
     slack_users = {}
     with open(SLACK_FILE_JSON, 'r') as slackfile:
-        # name,fullname,title,displayname,email,firstname,lastname,image_url
         for line in slackfile:
             line = line.strip()
             user = json.loads(line)
 
-            print(user)
-
             slack_users[user['email']] = user
+
+    github_users = {}
+    with open(GITHUB_FILE_JSON, 'r') as githubfile:
+        for line in githubfile:
+            line = line.strip()
+            user = json.loads(line)
+
+            github_users[user['login']] = user
 
     with open(PERSON_FILE_CSV, 'w') as person_file:
         person_file.write('login,email,name,role,slack,github,location\n')

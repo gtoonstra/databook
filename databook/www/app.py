@@ -24,7 +24,7 @@ def create_app():
         admin = Admin(
             app, name='DataBook',
             static_url_path='/',
-            index_view=views.DataPortal(endpoint='', url='/', name="DataBook"),
+            index_view=views.Databook(endpoint='', url='/', name="Databook"),
             template_mode='bootstrap3',
         )
         av = admin.add_view

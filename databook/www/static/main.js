@@ -2,7 +2,7 @@
 
   'use strict';
 
-  angular.module('DataPortalApp', ['ui.bootstrap'])
+  angular.module('DatabookApp', ['ui.bootstrap'])
 
      .controller('MasterController', ['$scope', '$log', '$http', '$uibModal',
         function($scope, $log, $http, $uibModal) {
@@ -20,7 +20,7 @@
     .controller('SearchController', ['$scope', '$log', '$http',
       function($scope, $log, $http) {
 
-        $scope.formData = {"searchTerm": "Data Book", "nodeType": "person", "csrf_token": 'nil'};
+        $scope.formData = {"searchTerm": "", "nodeType": "person", "csrf_token": 'nil'};
 
         $scope.columns = [];
         $scope.tabledata = [];

@@ -106,7 +106,7 @@ class DefaultUser(object):
             raise Exception("Invalid username or password")
 
 
-class DataPortal(AdminIndexView):
+class Databook(AdminIndexView):
 
     def is_visible(self):
         return True
