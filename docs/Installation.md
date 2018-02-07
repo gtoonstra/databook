@@ -5,7 +5,7 @@
 Build a container locally:
 
 ```
-# build -t gtoonstra/databook:0.1.0 .
+# docker build -t gtoonstra/databook:0.1.0 .
 ```
 
 Then just run it from the docker compose. There's a couple of shortcuts in that approach,
