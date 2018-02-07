@@ -5,6 +5,7 @@ Databook has the following directories, which have the following purposes:
 |directory|purpose|
 |---------|-------|
 |docs|Documentation|
-|loader|Code and some test data to load lineage data into databook|
-|processors|Some sample code files that hows how to use sqlineage and generate input files for databook. You'd typically customize this code that generates the CSV files|
-|www|The website of databook|
+|dags|Airflow dag code for extracting data from API's, munge them and get them ready for neo4j import|
+|docker|Mostly configuration files and host mounted directories for use with dependent docker containers|
+|databook|Some logic code for the backend of the website|
+|databook/www|The website of databook (angular, bootstrap)|
