@@ -21,6 +21,8 @@ from airflow.settings import Session
 from databook.operators import LdapOperator
 from airflow.operators.python_operator import PythonOperator
 from databook.operators import FileCopyOperator
+from databook.operators import SlackAPIUserListOperator
+from databook.operators import GithubUserListOperator
 
 
 args = {
@@ -34,7 +36,8 @@ GROUP_FILE = '/tmp/groups.json'
 FLATTENED_GROUP_FILE = '/tmp/flattened_groups.json'
 PERSON_FILE_CSV = '/tmp/persons.csv'
 PERSON_GROUPS_FILE_CSV = '/tmp/person_groups.csv'
-
+SLACK_FILE_JSON = '/tmp/slack.json'
+GITHUB_FILE_JSON = '/tmp/github.json'
 
 dag = airflow.DAG(
     'extract_neo4j_data',
@@ -107,18 +110,37 @@ def write_csvs(ds, **kwargs):
     with open(FLATTENED_GROUP_FILE, 'r') as infile:
         flattened_groups = json.load(infile)
 
+    slack_users = {}
+    with open(SLACK_FILE_JSON, 'r') as slackfile:
+        # name,fullname,title,displayname,email,firstname,lastname,image_url
+        for line in slackfile:
+            line = line.strip()
+            user = json.loads(line)
+
+            print(user)
+
+            slack_users[user['email']] = user
+
     with open(PERSON_FILE_CSV, 'w') as person_file:
         person_file.write('login,email,name,role,slack,github,location\n')
         with open(PERSON_GROUPS_FILE_CSV, 'w') as groups_file:
             groups_file.write('login,relation,group\n')
             for person in persons:
+                if person['mail'] in slack_users:
+                    slack_user = slack_users[person['mail']]
+                else:
+                    slack_user = {
+                        'title': 'unknown',
+                        'name': person['uid']
+                    }
+
                 # login,email,name,role,slack,github,location
                 person_rec = '{0},{1},{2},{3},{4},{5},{6}\n'.format(
                     person['uid'],
                     person['mail'],
                     person['displayName'],
-                    'unknown',
-                    'slack',
+                    slack_user['title'],
+                    slack_user['name'],
                     'github',
                     'location')
 
@@ -129,7 +151,7 @@ def write_csvs(ds, **kwargs):
                     group_obj = groups[group]
                     group_rec = '{0},ASSOCIATED,{1}\n'.format(
                         person['uid'],
-                        group_obj['dn'])
+                        group_obj['cn'])
                     groups_file.write(group_rec)
 
                     # login,relation,group
@@ -150,7 +172,7 @@ flatten_groups = PythonOperator(
     dag=dag)
 
 write_csvs = PythonOperator(
-    task_id='create_csvs',
+    task_id='write_csvs',
     python_callable=write_csvs,
     dag=dag)
 
@@ -166,8 +188,25 @@ copy_person_groups = FileCopyOperator(
     target_path='/import/person_groups.csv',
     dag=dag)
 
+extract_slack = SlackAPIUserListOperator(
+    task_id='extract_slack_users',
+    slack_conn_id='slack_conn',
+    method='users.list',
+    output_file=SLACK_FILE_JSON,
+    dag=dag)
+
+extract_github = GithubUserListOperator(
+    task_id='extract_github_users',
+    github_conn_id='github_conn',
+    output_file=GITHUB_FILE_JSON,
+    organization_id='coolblue-development',
+    dag=dag)
+
+
 ldap_persons >> flatten_groups
 ldap_groups >> flatten_groups
 flatten_groups >> write_csvs
+extract_slack >> write_csvs
+extract_github >> write_csvs
 write_csvs >> copy_persons
 write_csvs >> copy_person_groups
