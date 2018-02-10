@@ -64,7 +64,7 @@ class LdapHook(BaseHook):
                     if isinstance(entry[attr].value, list):
                         d[attr] = entry[attr].value
                     else:
-                        d[attr] = []
+                        d[attr] = [entry[attr].value]
                 else:
                     d[attr] = entry[attr].value
             result.append(d)

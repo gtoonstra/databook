@@ -38,6 +38,11 @@ PERSON_FILE_CSV = '/tmp/persons.csv'
 PERSON_GROUPS_FILE_CSV = '/tmp/person_groups.csv'
 SLACK_FILE_JSON = '/tmp/slack.json'
 GITHUB_FILE_JSON = '/tmp/github.json'
+GITHUB_USER_MAPPING = {
+    'manager': 'manager',
+    'helpdesk': 'helpdesk',
+    'employee': 'employee'
+}
 
 dag = airflow.DAG(
     'extract_neo4j_data',
@@ -47,7 +52,7 @@ dag = airflow.DAG(
 
 ldap_persons = LdapOperator(
     task_id='person_extract',
-    ldap_conn_id='freeipa_ldap',
+    ldap_conn_id='ldap_conn',
     base='dc=demo1,dc=freeipa,dc=org',
     search_filter='(objectClass=person)',
     attributes=['cn', 'sn', 'uid', 'mail', 'manager', 'displayName', 'memberOf'],
@@ -57,7 +62,7 @@ ldap_persons = LdapOperator(
 
 ldap_groups = LdapOperator(
     task_id='group_extract',
-    ldap_conn_id='freeipa_ldap',
+    ldap_conn_id='ldap_conn',
     base='dc=demo1,dc=freeipa,dc=org',
     search_filter='(objectClass=posixgroup)',
     attributes=['cn', 'displayName', 'description', 'memberOf'],
@@ -79,7 +84,7 @@ def flatten_groups(ds, **kwargs):
     for k, group in groups.items():
         list_of_groups = flattened_memberships.get(k, set([]))
 
-        if not group['memberOf']:
+        if 'memberOf' not in group or not group['memberOf']:
             flattened_memberships[k] = []
             continue
 
@@ -131,22 +136,33 @@ def write_csvs(ds, **kwargs):
         with open(PERSON_GROUPS_FILE_CSV, 'w') as groups_file:
             groups_file.write('login,relation,group\n')
             for person in persons:
+                slack_user = {
+                    'title': 'unknown',
+                    'name': person['uid']
+                }
                 if person['mail'] in slack_users:
                     slack_user = slack_users[person['mail']]
-                else:
-                    slack_user = {
-                        'title': 'unknown',
-                        'name': person['uid']
-                    }
+
+                github_user = {
+                    'login': 'notfound',
+                    'url': ''
+                }
+                if person['uid'] in GITHUB_USER_MAPPING:
+                    github_login = GITHUB_USER_MAPPING[person['uid']]
+                    github_user = github_users[github_login]
+
+                role = 'unknown'
+                if slack_user['title']:
+                    role = slack_user['title']
 
                 # login,email,name,role,slack,github,location
                 person_rec = '{0},{1},{2},{3},{4},{5},{6}\n'.format(
                     person['uid'],
                     person['mail'],
-                    person['displayName'],
-                    slack_user['title'],
+                    person['cn'],
+                    role,
                     slack_user['name'],
-                    'github',
+                    github_user['login'],
                     'location')
 
                 person_file.write(person_rec)

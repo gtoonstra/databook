@@ -105,6 +105,8 @@ class DefaultUser(object):
             log.info("Password incorrect for user %s", username)
             raise Exception("Invalid username or password")
 
+        return DefaultUser(username)
+
 
 class Databook(AdminIndexView):
 
@@ -138,9 +140,8 @@ class Login(BaseView):
             username = request.form['username']
             password = request.form['password']        
 
-            # DefaultUser.try_login(username, password)
-
-            login_user(DefaultUser(username))
+            user = DefaultUser.try_login(username, password)
+            login_user(user)
             next_url = request.args.get('next')
             return redirect(next_url or url_for("admin.index"))
         return self.render('login.html')

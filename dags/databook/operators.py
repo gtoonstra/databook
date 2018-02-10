@@ -212,8 +212,8 @@ class SlackAPIUserListOperator(BaseOperator):
 
                 time.sleep(10)
 
-                if ctr > 2:
-                    has_more = False
+#                if ctr > 2:
+#                    has_more = False
 
 
 class GithubUserListOperator(BaseOperator):

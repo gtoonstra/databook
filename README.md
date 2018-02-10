@@ -93,4 +93,3 @@ This project is licensed under the Apache 2.0 License. See the [License](https:/
 
 * Enormous thanks to Airbnb for describing the philosophy behind the dataportal project, the elaborate descriptions, screenshots and articles.
 * Some code for LDAP authentication and initial organization of the website back-end code was heavily inspired / copied from the [airflow](https://github.com/apache/incubator-airflow) project
-* 
