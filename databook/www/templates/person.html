@@ -14,9 +14,9 @@
           <h4>Find me at</h4>
           <table class="table borderless">
             <tr><td><i class="fa fa-map-marker" aria-hidden="true"></i></td><td>{{person.location}}</td></tr>
-            <tr><td><i class="fa fa-envelope-o" aria-hidden="true"></i></td><td>{{person.email}}</td></tr>
+            <tr><td><i class="fa fa-envelope-o" aria-hidden="true"></i></td><td><a href="mailto:{{person.email}}">{{person.email}}</a></td></tr>
             <tr><td><i class="fa fa-slack" aria-hidden="true"></i></td><td>@{{person.slack}}</td></tr>
-            <tr><td><i class="fa fa-github" aria-hidden="true"></i></td><td>{{person.github}}</td></tr>
+            <tr><td><i class="fa fa-github" aria-hidden="true"></i></td><td><a href='{{person.github_url}}'>{{person.github}}</a></td></tr>
           </table>
         </div>
         <div class="col-sm-8">

@@ -7,6 +7,7 @@ from databook import configuration as conf
 from ldap3 import Server, Connection, ALL, LEVEL, SUBTREE, BASE
 from future.utils import native
 from databook.utils.logging_mixin import LoggingMixin
+import json
 
 
 log = LoggingMixin().log
@@ -323,7 +324,6 @@ class Group(BaseView):
 
 """
 
-""" DISABLE 
 class Table(BaseView):
 
     def is_visible(self):
@@ -378,22 +378,6 @@ class Table(BaseView):
             d['link'] = url_for('table.showTable', table_id=d['uuid'])
             downstream.append(d)
 
-        charts = []
-        chartList = svc.query("MATCH (a:Entity:Database:Table {uuid: {uuid}})<-[s:CONSUMED]-(c:Entity:Tableau:Chart) "
-            "RETURN c", {"uuid": table_id})
-        for record in chartList:
-            d = record['c'].properties
-            d['link'] = url_for('chart.showChart', chart_id=d['uuid'])
-            charts.append(d)
-
-        creators = []
-        creatorList = svc.query("MATCH (a:Entity:Database:Table {uuid: {uuid}})<-[s:CREATED]-(p:Entity:Org:Person) "
-            "RETURN p", {"uuid": table_id})
-        for record in creatorList:
-            d = record['p'].properties
-            d['link'] = url_for('person.showPerson', person_id=d['uuid'])
-            creators.append(d)
-
         consumers = []
         consumerList = svc.query("MATCH (t:Entity:Database:Table {uuid: {uuid}})<-[a:CONSUMED]-()"
             "<-[b:CONSUMED]-(p:Entity:Org:Person) "
@@ -423,17 +407,38 @@ class Table(BaseView):
         for record in consumptionList:
             consumptionCount = record['count']
 
+        print(table)
+        columns = json.loads(table['columns'])
+
         return self.render('table.html', 
             table=table,
             upstream=upstream,
             downstream=downstream,
-            charts=charts,
-            creators=creators,
             consumers=consumers,
             consumerGroups=consumerGroups,
-            consumptionCount=consumptionCount)
+            consumptionCount=consumptionCount,
+            columns=columns)
+
+""" DISABLED
+        charts = []
+        chartList = svc.query("MATCH (a:Entity:Database:Table {uuid: {uuid}})<-[s:CONSUMED]-(c:Entity:Tableau:Chart) "
+            "RETURN c", {"uuid": table_id})
+        for record in chartList:
+            d = record['c'].properties
+            d['link'] = url_for('chart.showChart', chart_id=d['uuid'])
+            charts.append(d)
+
+        creators = []
+        creatorList = svc.query("MATCH (a:Entity:Database:Table {uuid: {uuid}})<-[s:CREATED]-(p:Entity:Org:Person) "
+            "RETURN p", {"uuid": table_id})
+        for record in creatorList:
+            d = record['p'].properties
+            d['link'] = url_for('person.showPerson', person_id=d['uuid'])
+            creators.append(d)
+"""
 
 
+""" DISABLE 
 class Chart(BaseView):
 
     def is_visible(self):

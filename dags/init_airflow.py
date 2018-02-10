@@ -60,6 +60,15 @@ def init_airflow_databook():
                      "password": "j4oen"})
 
     create_new_conn(session,
+                    {"conn_id": "airflow",
+                     "conn_type": "postgresql",
+                     "host": "pg_airflow_databook",
+                     "port": 5432,
+                     "schema": "airflow",
+                     "login": "airflow",
+                     "password": "airflow"})
+
+    create_new_conn(session,
                     {"conn_id": "ldap_conn",
                      "conn_type": "ldap",
                      "host": "ipa.demo1.freeipa.org",

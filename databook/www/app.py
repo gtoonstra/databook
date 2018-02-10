@@ -31,7 +31,7 @@ def create_app():
         av(views.Login(name='Login', category='Admin'))
         av(views.Person(name='Persons', category='Entities'))
         av(views.Group(name='Groups', category='Entities'))
-        #av(views.Table(name='Tables', category='Entities'))
+        av(views.Table(name='Tables', category='Entities'))
         #av(views.Chart(name='Charts', category='Entities'))
 
     login_manager = flask_login.LoginManager()

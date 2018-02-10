@@ -6,5 +6,6 @@ MERGE (person:Entity:Org:Person {
     role: row.role,
     slack: row.slack,
     github: row.github,
+    github_url: row.github_url,
     location: row.location
 })

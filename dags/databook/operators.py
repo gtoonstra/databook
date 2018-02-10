@@ -16,8 +16,11 @@ from databook.neo4j_hook import Neo4jHook
 from databook.ldap_hook import LdapHook
 from databook.slack_hook import DatabookSlackHook
 from databook.github_hook import GithubHook
+from databook.alchemy_hook import AlchemyHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
+from sqlalchemy.engine import reflection
+from sqlalchemy import MetaData
 import logging
 import json
 import time
@@ -246,8 +249,70 @@ class GithubUserListOperator(BaseOperator):
                     "name": remove_commas(member.name),
                     "login": remove_commas(member.login),
                     "email": remove_commas(member.email),
-                    "url": remove_commas(member.url),
+                    "url": remove_commas(member.html_url),
                     "location": remove_commas(member.location)
                 }
                 outfile.write(json.dumps(user))
                 outfile.write('\n')
+
+
+class MetaDataOperator(BaseOperator):
+    """
+    Get metadata about tables and dump to disk
+    """
+
+    ui_color = '#AABA19'
+
+    @apply_defaults
+    def __init__(self,
+                 db_conn_id,
+                 output_file,
+                 schemas,
+                 *args, **kwargs):
+        super(MetaDataOperator, self).__init__(*args, **kwargs)
+        self.db_conn_id = db_conn_id
+        self.output_file = output_file
+        self.schemas = schemas
+        if schemas is None or not isinstance(schemas, list):
+            raise Exception("Schemas should be a list of schemas to query")
+
+    def execute(self, **kwargs):
+        hook = AlchemyHook(db_conn_id=self.db_conn_id)
+        db = hook.get_db()
+        engine = hook.get_conn()
+        insp = reflection.Inspector.from_engine(engine)
+
+        # name,comment,columns,numrows,relation,schema,database
+        with codecs.open(self.output_file, 'w', encoding='utf-8') as outfile:
+            outfile.write('"name","comment","columns","numrows","relation","schema","database"\n')
+            for schema in insp.get_schema_names():
+                if schema not in self.schemas:
+                    continue
+
+                connection = engine.connect()
+
+                meta = MetaData(bind=engine, schema=schema)
+                meta.reflect()
+                table_json = {}
+                for table in meta.sorted_tables:
+                    result = connection.execute("select count(1) from {0}.{1}".format(
+                        table.schema, table.name))
+                    numrows = result.next()[0]
+
+                    cols = []
+                    for col in table.columns:
+                        col_json = {'name': col.name, 
+                            'comment': col.comment if col.comment is not None else '', 
+                            'type': str(col.type)}
+                        cols.append(col_json)
+                    json_str = json.dumps(cols)
+                    json_str = json_str.replace('"','""')
+
+                    s = '"{0}","{1}","{2}","{3}","ASSOCIATED","{4}","{5}"\n'.format(
+                        table.name,
+                        table.comment if table.comment is not None else '',
+                        json_str,
+                        numrows,
+                        table.schema,
+                        db)
+                    outfile.write(s)

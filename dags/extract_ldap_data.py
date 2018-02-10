@@ -23,6 +23,7 @@ from airflow.operators.python_operator import PythonOperator
 from databook.operators import FileCopyOperator
 from databook.operators import SlackAPIUserListOperator
 from databook.operators import GithubUserListOperator
+from databook.operators import MetaDataOperator
 
 
 args = {
@@ -43,6 +44,8 @@ GITHUB_USER_MAPPING = {
     'helpdesk': 'helpdesk',
     'employee': 'employee'
 }
+AIRFLOW_DB_CSV = '/tmp/airflowdb.csv'
+
 
 dag = airflow.DAG(
     'extract_neo4j_data',
@@ -132,7 +135,7 @@ def write_csvs(ds, **kwargs):
             github_users[user['login']] = user
 
     with open(PERSON_FILE_CSV, 'w') as person_file:
-        person_file.write('login,email,name,role,slack,github,location\n')
+        person_file.write('login,email,name,role,slack,github,github_url,location\n')
         with open(PERSON_GROUPS_FILE_CSV, 'w') as groups_file:
             groups_file.write('login,relation,group\n')
             for person in persons:
@@ -145,7 +148,7 @@ def write_csvs(ds, **kwargs):
 
                 github_user = {
                     'login': 'notfound',
-                    'url': ''
+                    'url': '#'
                 }
                 if person['uid'] in GITHUB_USER_MAPPING:
                     github_login = GITHUB_USER_MAPPING[person['uid']]
@@ -156,13 +159,14 @@ def write_csvs(ds, **kwargs):
                     role = slack_user['title']
 
                 # login,email,name,role,slack,github,location
-                person_rec = '{0},{1},{2},{3},{4},{5},{6}\n'.format(
+                person_rec = '{0},{1},{2},{3},{4},{5},{6},{7}\n'.format(
                     person['uid'],
                     person['mail'],
                     person['cn'],
                     role,
                     slack_user['name'],
                     github_user['login'],
+                    github_user['url'],
                     'location')
 
                 person_file.write(person_rec)
@@ -209,6 +213,12 @@ copy_person_groups = FileCopyOperator(
     target_path='/import/person_groups.csv',
     dag=dag)
 
+copy_airflow_tables = FileCopyOperator(
+    task_id='copy_airflow_tables',
+    source_path=AIRFLOW_DB_CSV,
+    target_path='/import/table_databases.csv',
+    dag=dag)
+
 extract_slack = SlackAPIUserListOperator(
     task_id='extract_slack_users',
     slack_conn_id='slack_conn',
@@ -223,6 +233,13 @@ extract_github = GithubUserListOperator(
     organization_id='<your-org>',
     dag=dag)
 
+extract_metadata = MetaDataOperator(
+    task_id='extract_airflow_db',
+    db_conn_id='airflow',
+    output_file=AIRFLOW_DB_CSV,
+    schemas=['public'],
+    dag=dag)
+
 
 ldap_persons >> flatten_groups
 ldap_groups >> flatten_groups
@@ -231,3 +248,5 @@ extract_slack >> write_csvs
 extract_github >> write_csvs
 write_csvs >> copy_persons
 write_csvs >> copy_person_groups
+write_csvs >> copy_airflow_tables
+extract_metadata >> write_csvs
