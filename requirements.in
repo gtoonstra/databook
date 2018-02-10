@@ -10,5 +10,7 @@ neo4j-driver>=1.5.0
 psutil>=4.2.0
 python-dateutil>=2.3
 setproctitle>=1.1.8
+sqlalchemy>=1.1.15
+sqlalchemy-utc>=0.9.0
 sqlineage==0.2.2
 urlparse3>=1.1

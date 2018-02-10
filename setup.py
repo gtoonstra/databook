@@ -62,6 +62,8 @@ def do_setup():
             'psutil>=4.2.0, <5.0.0',
             'python-dateutil>=2.3, <3',
             'setproctitle>=1.1.8, <2',
+            'sqlalchemy>=1.1.15, <1.2.0',
+            'sqlalchemy-utc>=0.9.0',
             'sqlineage==0.2.2',
             'urllib3==1.22',
             'urlparse3==1.1',

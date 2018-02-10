@@ -163,6 +163,8 @@ def favoriteGroup():
 @login_required
 def createGroup():
     group_name = request.json['groupTitle']
+    group_link = request.json['groupLink']
+    link_desc = request.json['linkDesc']
 
     logger.info("Trying to create group {0}".format(group_name))
 
@@ -174,11 +176,11 @@ def createGroup():
         res.status_code = 400
         return res
 
-    groupList = svc.query("MERGE (g:Entity:Org:Group {name: {name}}) "
+    groupList = svc.query("MERGE (g:Entity:Org:Group {name: {name}, link: {link}, link_desc: {link_desc}}) "
         "WITH g "
         "MATCH (person:Entity:Org:Person {id: {login}}) "
         "MERGE (person)-[r:ASSOCIATED]->(g) "
-        "RETURN g", {"name": group_name, "login": current_user.get_id()})
+        "RETURN g", {"name": group_name, "login": current_user.get_id(), "link": group_link, "link_desc": link_desc})
 
     groupList = svc.query("MATCH (g:Entity:Org:Group {name: {name}}) "
         "RETURN g", {"name": group_name})

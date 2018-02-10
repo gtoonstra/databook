@@ -254,7 +254,7 @@ class Group(BaseView):
     @login_required
     def showGroup(self, group_id):
         svc = Neo4JService()
-        group = {'name': 'Untitled'}
+        group = {'name': 'Untitled', 'link': 'http://', 'link_desc': 'Our page on ...'}
 
         person_uuid = None
         personList = svc.query(

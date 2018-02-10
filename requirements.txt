@@ -22,6 +22,8 @@ pyasn1==0.4.2             # via ldap3
 python-dateutil==2.6.1
 setproctitle==1.1.10
 six==1.11.0               # via python-dateutil
+sqlalchemy-utc==0.10.0
+sqlalchemy==1.2.2
 sqlineage==0.2.2
 urllib3==1.22             # via elasticsearch
 urlparse3==1.1

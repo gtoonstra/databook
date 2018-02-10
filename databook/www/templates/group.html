@@ -5,11 +5,13 @@
 {% block body %}
 {{ super() }}  
 
-    <div class="full-container" ng-controller="GroupController" ng-init="isFavorite={{group.liked}}; setGroup('{{group.uuid}}', '{{group.name}}');">
+    <div class="full-container" ng-controller="GroupController" ng-init="isFavorite={{group.liked}}; setGroup('{{group.uuid}}', '{{group.name}}', '{{group.link}}', '{{group.link_desc}}');">
       <div class="row">
         <div class="col-sm-2">
           <span ng-if="isEditing">
             <input type="text" ng-model="formData.groupTitle" class="form-control" placeholder="...">
+            <input type="text" ng-model="formData.groupLink" class="form-control" placeholder="...">
+            <input type="text" ng-model="formData.linkDesc" class="form-control" placeholder="...">
             <button class="btn btn-default" type="submit" ng-click="createGroup()"><i class="fa fa-users" aria-hidden="true"></i>&nbsp;Create</i>
             </button>
           </span>
@@ -19,6 +21,7 @@
               <span ng-if="!isFavorite"><i class="fa fa-heart-o" aria-hidden="true"></i></span>
             </a>
             </h4>
+            <p><a href='{{group.link}}'>{{group.link_desc}}</a></p>
           </span>
           <table class="table borderless">
             <tr>
@@ -32,9 +35,6 @@
           </table>
           <br/><br/>
           <h4>Actions</h4>
-
-          <a href='#'><i class="fa fa-plus" aria-hidden="true"></i> &nbsp;Add external link</a><br/>
-          <a href='#'><i class="fa fa-pencil-square-o" aria-hidden="true"></i> &nbsp;Edit group</a><br/>
 
           {% if isMember %}
           <a href='#' ng-click="leaveGroup('{{group.uuid}}')"><i class="fa fa-sign-out" aria-hidden="true"></i> &nbsp;Leave group</a>

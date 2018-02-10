@@ -66,11 +66,13 @@
       function($scope, $log, $http, $window) {
         $scope.isFavorite = false;
         $scope.isEditing = false;
-        $scope.formData = {"groupTitle": '', "group_uuid": ''};
+        $scope.formData = {"groupTitle": '', "group_uuid": '', "groupLink": '', "linkDesc": ''};
 
-        $scope.setGroup = function(group_uuid, group_name) {
+        $scope.setGroup = function(group_uuid, group_name, group_link, link_desc) {
           $scope.formData['group_uuid'] = group_uuid;
           $scope.formData['groupTitle'] = group_name;
+          $scope.formData['groupLink'] = group_link;
+          $scope.formData['linkDesc'] = link_desc;
           if ($scope.formData['group_uuid'] == '-1') {
             $scope.isEditing = true;
           }
@@ -162,3 +164,4 @@
   ]);
 
 }());
+
