@@ -104,5 +104,6 @@ data/
 esdata/nodes
 docker/neo4j/import/persons.csv
 docker/neo4j/import/person_groups.csv
+docker/neo4j/import/table_databases.csv
 dags/do_not_upload/*
 

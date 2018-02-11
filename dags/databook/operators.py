@@ -17,14 +17,20 @@ from databook.ldap_hook import LdapHook
 from databook.slack_hook import DatabookSlackHook
 from databook.github_hook import GithubHook
 from databook.alchemy_hook import AlchemyHook
+from databook.tableau_hook import TableauHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 from sqlalchemy.engine import reflection
 from sqlalchemy import MetaData
+from bs4 import BeautifulSoup
+import os
 import logging
 import json
 import time
 import codecs
+import logging
+import tempfile
+import zipfile
 from shutil import copyfile
 
 
@@ -174,11 +180,9 @@ class SlackAPIUserListOperator(BaseOperator):
         slack = DatabookSlackHook(slack_conn_id=self.slack_conn_id)
 
         has_more = True
-        ctr = 0
 
         with codecs.open(self.output_file, 'w', encoding='utf-8') as outfile:
             while has_more:
-                ctr += 1
 
                 self.construct_api_call_params()
                 result = slack.call(self.method, self.api_params)
@@ -213,10 +217,7 @@ class SlackAPIUserListOperator(BaseOperator):
                     outfile.write(json.dumps(user))
                     outfile.write('\n')
 
-                time.sleep(10)
-
-#                if ctr > 2:
-#                    has_more = False
+                time.sleep(30)
 
 
 class GithubUserListOperator(BaseOperator):
@@ -316,3 +317,114 @@ class MetaDataOperator(BaseOperator):
                         table.schema,
                         db)
                     outfile.write(s)
+
+
+def get_bigquery_connection(connection):
+    conn_info = {'type': 'bigquery'}
+    conn_info['project'] = connection.get('project')
+    conn_info['schema'] = connection.get('schema')
+    conn_info['name'] = connection.parent.get('name')
+    return conn_info
+
+
+def get_sqlserver_connection(connection):
+    conn_info = {'type': 'sqlserver'}
+    conn_info['server'] = connection.get('server')
+    conn_info['db'] = connection.get('dbname')
+    conn_info['name'] = connection.parent.get('name')
+    if 'one-time-sql' in connection:
+        conn_info['one-time-sql'] = connection.get('one-time-sql')
+    return conn_info
+
+
+class TableauDatasourcesOperator(BaseOperator):
+    """
+    Analyzes data sources from tableau and exports json
+    """
+
+    ui_color = '#DDBAFE'
+
+    @apply_defaults
+    def __init__(self,
+                 tableau_conn_id,
+                 output_file,
+                 *args, **kwargs):
+        super(TableauDatasourcesOperator, self).__init__(*args, **kwargs)
+        self.tableau_conn_id = tableau_conn_id
+        self.tmp_dir = tempfile.mkdtemp()
+        self.output_file = output_file
+
+    def unzip(self, source, dest_dir):
+        with zipfile.ZipFile(source) as zf:
+            for member in zf.infolist():
+                zf.extract(member, dest_dir)
+
+    def get_data_sources(self):
+        hook = TableauHook(self.tableau_conn_id)
+        server = hook.get_conn()
+        all_datasources, pagination_items = server.datasources.get()
+        logging.info("There are {0} datasources on site: ".format(pagination_items.total_available))
+
+        for datasource in all_datasources:
+            logging.info("Processing data source {0}".format(datasource.name))
+
+            tmp_file = tempfile.NamedTemporaryFile(mode='w+b', suffix='tds', prefix='tmp', dir=self.tmp_dir, delete=True) 
+            dest_path = os.path.join(self.tmp_dir, datasource.name)
+
+            try:
+                os.makedirs(dest_path)
+            except Exception(e):
+                logging.error(e)
+                continue
+
+            server.datasources.download(datasource._id, filepath=tmp_file.name, include_extract=False)
+            self.unzip(tmp_file.name, dest_path)
+
+    def parse_data_sources(self):
+        views = {}
+
+        for dirname, subdirlist, filelist in os.walk(self.tmp_dir):
+            base_dir = os.path.basename(os.path.normpath(dirname))
+            if base_dir.startswith('.'):
+                continue
+
+            for fname in filelist:
+                if not fname.endswith('tds'):
+                    continue
+                logging.info("{0} of {1}".format(fname, base_dir))
+
+                conn_infos = {}
+                rel_infos = {}
+                datasource = {
+                    'conns': conn_infos,
+                    'rels': rel_infos
+                }
+                views[base_dir] = datasource
+
+                file_path = os.path.join(dirname, fname)
+                with open(file_path, 'r') as xml_doc:
+                    soup = BeautifulSoup(xml_doc, 'xml')
+                    for connection in soup.find_all('connection'):
+                        logging.info(connection.get('class'))
+                        if connection.get('class') == 'bigquery':
+                            conn_info = get_bigquery_connection(connection)
+                            conn_infos[conn_info['name']] = conn_info
+                        if connection.get('class') == 'sqlserver':
+                            conn_info = get_sqlserver_connection(connection)
+                            conn_infos[conn_info['name']] = conn_info
+
+                    for relation in soup.find_all('relation'):
+                        logging.info(relation.get('name'))
+                        if relation.get('type') == 'text':
+                            rel_info = {'name': relation.get('name')}
+                            rel_info['conn_name'] = relation.get('connection')
+                            rel_info['connection'] = conn_infos[rel_info['conn_name']]
+                            rel_info['query'] = relation.text
+                            rel_infos[rel_info['name']] = rel_info
+        return datasources
+
+    def execute(self, **kwargs):
+        self.get_data_sources()
+        datasources = self.parse_data_sources()
+        with codecs.open(self.output_file, 'w', encoding='utf-8') as outfile:
+            outfile.write(json.dumps(datasources))

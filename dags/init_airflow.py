@@ -77,6 +77,15 @@ def init_airflow_databook():
                      "login": "uid=admin,cn=users,cn=accounts,dc=demo1,dc=freeipa,dc=org",
                      "password": "Secret123"})
 
+    create_new_conn(session,
+                    {"conn_id": "tableau_conn",
+                     "conn_type": "tableau",
+                     "host": "<insert_host_here>",
+                     "port": 80,
+                     "schema": "",
+                     "login": "<login>",
+                     "password": "<password>"})
+
     session.close()
 
 dag = airflow.DAG(

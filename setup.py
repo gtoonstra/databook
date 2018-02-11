@@ -47,6 +47,7 @@ def do_setup():
         zip_safe=False,
         scripts=['databook/bin/databook'],
         install_requires=[
+            'beautifulsoup4>=4.6.0',
             'click==6.7',
             'elasticsearch==5.4.0',
             'flask-admin==1.5.0',
@@ -65,6 +66,7 @@ def do_setup():
             'sqlalchemy>=1.1.15, <1.2.0',
             'sqlalchemy-utc>=0.9.0',
             'sqlineage==0.2.2',
+            'tableauserverclient>=0.6.1',
             'urllib3==1.22',
             'urlparse3==1.1',
             'werkzeug==0.12.2',

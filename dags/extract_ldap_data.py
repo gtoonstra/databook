@@ -24,6 +24,7 @@ from databook.operators import FileCopyOperator
 from databook.operators import SlackAPIUserListOperator
 from databook.operators import GithubUserListOperator
 from databook.operators import MetaDataOperator
+from databook.operators import TableauDatasourcesOperator
 
 
 args = {
@@ -45,6 +46,7 @@ GITHUB_USER_MAPPING = {
     'employee': 'employee'
 }
 AIRFLOW_DB_CSV = '/tmp/airflowdb.csv'
+TABLEAU_JSON = '/tmp/tableau_datasources.json'
 
 
 dag = airflow.DAG(
@@ -240,6 +242,12 @@ extract_metadata = MetaDataOperator(
     schemas=['public'],
     dag=dag)
 
+extract_tableau = TableauDatasourcesOperator(
+    task_id='tableau_datasources',
+    tableau_conn_id='tableau_conn',
+    output_file=TABLEAU_JSON,
+    dag=dag)
+
 
 ldap_persons >> flatten_groups
 ldap_groups >> flatten_groups
@@ -250,3 +258,4 @@ write_csvs >> copy_persons
 write_csvs >> copy_person_groups
 write_csvs >> copy_airflow_tables
 extract_metadata >> write_csvs
+extract_tableau >> write_csvs
