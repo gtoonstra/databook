@@ -1,6 +1,6 @@
 # DESCRIPTION: Databook docker file
 
-FROM debian:jessie
+FROM python:3.4-slim
 MAINTAINER GT
 
 # Never prompts the user for choices on installation/configuration of packages
@@ -21,7 +21,6 @@ ENV LC_ALL en_US.UTF-8
 
 RUN set -ex \
     && buildDeps=' \
-        python3-dev \
         libkrb5-dev \
         libsasl2-dev \
         libssl-dev \
@@ -33,8 +32,6 @@ RUN set -ex \
     && apt-get update -yqq \
     && apt-get install -yqq --no-install-recommends \
         $buildDeps \
-        python3-pip \
-        python3-requests \
         apt-utils \
         curl \
         netcat \
@@ -43,9 +40,9 @@ RUN set -ex \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && useradd -ms /bin/bash -d ${DATABOOK_HOME} databook \
-    && python3 -m pip install -U pip \
     && pip install Cython \
-    && pip install ndg-httpsclient \
+       ndg-httpsclient \
+       ldap3 \
     && apt-get remove --purge -yqq $buildDeps \
     && apt-get clean \
     && rm -rf \
@@ -60,7 +57,7 @@ COPY docker/databook/script/entrypoint.sh /entrypoint.sh
 
 ADD . /tmp/
 WORKDIR /tmp/
-RUN python3 /tmp/setup.py install
+RUN pip install /tmp/
 
 # COPY config/databook.cfg ${DATABOOK_HOME}/databook.cfg
 
