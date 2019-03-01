@@ -12,7 +12,7 @@ order to provide some clarity in that process.
 In short, the dataportal keeps track how data gets created and how it is consumed in the organization
 through the processing of log files, APIs, directories, metadata and other information in an automated way.
 
-*** You should probably look at Amundsen, an opensource version of dataportal, engineered by Lyft: https://github.com/lyft/amundsenfrontendlibrary , as it already has more features and engineers involved. ***
+* You should probably look at Amundsen, an opensource version of dataportal, engineered by Lyft: https://github.com/lyft/amundsenfrontendlibrary , as it already has more features and engineers involved. *
 
 ## Getting started
 
